@@ -57,6 +57,7 @@ python main.py
 | `COMMAND_PREFIX` | Préfixe des commandes texte                                       | `§`    |
 | `GUILD_ID`       | ID d'un serveur pour synchroniser les slash instantanément (dev) | global |
 | `OWNER_ID`       | ID Discord de l'owner principal du bot                           | —      |
+| `DEBUG`          | Active le mode debug (`1`/`true`/`yes`/`on`)                     | `false`|
 
 > Sans `GUILD_ID`, les commandes slash sont synchronisées globalement, ce qui
 > peut prendre jusqu'à une heure la première fois.
@@ -75,6 +76,8 @@ chargé automatiquement au démarrage.
 | `ping`     | Affiche la latence du bot            |
 | `userinfo [membre]` | Affiche les informations détaillées d'un utilisateur (défaut : soi-même) |
 | `avatar [membre]`   | Affiche l'avatar d'un utilisateur (avec liens PNG/JPG/WEBP/GIF) |
+| `uptime`   | Affiche depuis combien de temps le bot tourne |
+| `status`   | Version, ping, nombre de serveurs et état du mode debug |
 
 ### Commandes d'administration
 
@@ -89,6 +92,7 @@ Réservées aux membres possédant la permission **Administrateur**.
 | `unconfine <membre>`| Libère l'utilisateur : restaure son accès et supprime le salon de confinement. |
 | `mute <membre> <durée>` | Coupe la parole (timeout Discord) pour une durée (`30s`, `5m`, `2h`, `1d`, `1h30m` ; max 28 j). |
 | `unmute <membre>`   | Rend la parole à un utilisateur mute.                           |
+| `clear <nombre>`    | Supprime un nombre de messages du salon (max 100 ; permission *Gérer les messages*). |
 | `warn <membre>`     | Avertit un utilisateur (sanction progressive, voir ci-dessous). |
 | `unwarn <membre>`   | Retire un avertissement et lève les sanctions temporaires.      |
 | `warns <membre>`    | Affiche le nombre d'avertissements d'un utilisateur.            |

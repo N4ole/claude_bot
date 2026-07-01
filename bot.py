@@ -1,5 +1,6 @@
 """Définition de la classe du bot et chargement automatique des commandes."""
 import logging
+from datetime import datetime, timezone
 from pathlib import Path
 
 import discord
@@ -27,6 +28,9 @@ class ClaudeBot(commands.Bot):
         intents.voice_states = True
         # Nécessaire pour suivre les changements de statut (watch).
         intents.presences = True
+
+        # Heure de démarrage du bot (pour la commande uptime).
+        self.start_time = datetime.now(timezone.utc)
 
         super().__init__(
             command_prefix=commands.when_mentioned_or(config.PREFIX),
