@@ -16,8 +16,17 @@ claude_bot/
 └── cogs/            # Un fichier par commande
     ├── help.py
     ├── bonjour.py
-    └── ping.py
+    ├── ping.py
+    ├── watch.py
+    └── owner/        # Commandes réservées aux owners du bot
+        ├── manage.py     # addowner / rmowner / owners
+        ├── reload.py     # reload
+        ├── shutdown.py   # shutdown
+        └── say.py        # say
 ```
+
+Les cogs sont chargés récursivement : ajouter un fichier dans `cogs/` **ou**
+dans un sous-dossier (comme `cogs/owner/`) suffit pour ajouter une commande.
 
 Chaque commande utilise `@commands.hybrid_command`, ce qui la rend disponible
 **à la fois** en préfixe (`§ping`) et en slash (`/ping`) sans duplication.
@@ -89,6 +98,11 @@ du serveur.
 | `addowner <user>`   | Ajoute un owner additionnel (stocké dans `owners.json`).        |
 | `rmowner <user>`    | Retire un owner additionnel (l'owner principal est protégé).    |
 | `owners`            | Liste tous les owners du bot.                                   |
+| `reload [cog]`      | Recharge un cog à chaud (ou `all` pour tout recharger).         |
+| `shutdown`          | Éteint le bot.                                                  |
+| `say <message>`     | Fait parler le bot dans le salon courant.                      |
+
+Ces commandes sont regroupées dans le dossier `cogs/owner/`.
 
 > L'owner principal est défini par `OWNER_ID` dans le `.env` et ne peut pas
 > être retiré. Les owners additionnels persistent dans `owners.json`.

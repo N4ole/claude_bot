@@ -38,11 +38,15 @@ class ClaudeBot(commands.Bot):
         await self._sync_commands()
 
     async def _load_cogs(self) -> None:
-        """Charge automatiquement chaque fichier .py du dossier cogs/."""
-        for file in sorted(COGS_DIR.glob("*.py")):
+        """Charge chaque fichier .py de cogs/ et de ses sous-dossiers."""
+        for file in sorted(COGS_DIR.rglob("*.py")):
             if file.stem.startswith("_"):
                 continue
-            extension = f"cogs.{file.stem}"
+            # Transforme le chemin en module pointé, ex :
+            #   cogs/ping.py         -> cogs.ping
+            #   cogs/owner/reload.py -> cogs.owner.reload
+            relative = file.relative_to(COGS_DIR.parent).with_suffix("")
+            extension = ".".join(relative.parts)
             try:
                 await self.load_extension(extension)
                 log.info("Cog chargé : %s", extension)
