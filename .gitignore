@@ -13,6 +13,7 @@ __pycache__/
 watched.json
 owners.json
 warns.json
+confinements.json
 
 # Logs
 *.log

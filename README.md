@@ -102,10 +102,10 @@ précédent, et applique une sanction :
 | 4 | Confinement pendant une semaine |
 | 5 | Bannissement permanent |
 
-> Le compteur est persistant (`warns.json`). Le bot a besoin des permissions
-> **Gérer les rôles**, **Expulser les membres/Timeout** (`moderate_members`) et
-> **Bannir** selon les niveaux. La libération automatique du confinement (niveau
-> 4) est planifiée en mémoire et ne survit pas à un redémarrage du bot.
+> Le compteur est persistant (`warns.json`). Le confinement du niveau 4 est
+> temporisé jusqu'à une **date de fin précise**, persistée dans
+> `confinements.json` : la libération est **automatiquement reprise au démarrage**
+> du bot (libération immédiate si l'échéance est déjà passée).
 
 > Le salon de log n'est visible que par les administrateurs et le bot.
 > La surveillance persiste entre les redémarrages (`watched.json`).

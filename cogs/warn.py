@@ -7,9 +7,8 @@ Barème des sanctions (un rôle « Warn N » reflète le niveau courant) :
   4 → confinement pendant une semaine
   5 → bannissement permanent
 """
-import asyncio
 import logging
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 
 import discord
 from discord.ext import commands
@@ -106,12 +105,10 @@ class Warn(commands.Cog):
         if level == 4:
             confine_cog = self.bot.get_cog("Confine")
             if confine_cog is not None:
-                await confine_cog.apply_confinement(ctx.guild, member)
-                # Libération automatique après une semaine (best-effort,
-                # ne survit pas à un redémarrage du bot).
-                self.bot.loop.create_task(
-                    self._release_confinement_later(ctx.guild.id, member.id)
-                )
+                # Confinement jusqu'à une date précise, persistée sur disque
+                # et reprise automatiquement après un redémarrage du bot.
+                until = datetime.now(timezone.utc) + CONFINE_DURATION
+                await confine_cog.apply_temp_confinement(ctx.guild, member, until)
             return "confinement pendant une semaine"
 
         # Niveau >= MAX_WARN : bannissement.
@@ -120,18 +117,6 @@ class Warn(commands.Cog):
         except discord.HTTPException:
             return "bannissement (échec — vérifiez les permissions)"
         return "bannissement permanent"
-
-    async def _release_confinement_later(
-        self, guild_id: int, member_id: int
-    ) -> None:
-        await asyncio.sleep(CONFINE_DURATION.total_seconds())
-        guild = self.bot.get_guild(guild_id)
-        if guild is None:
-            return
-        member = guild.get_member(member_id)
-        confine_cog = self.bot.get_cog("Confine")
-        if member is not None and confine_cog is not None:
-            await confine_cog.remove_confinement(guild, member)
 
     # ------------------------------------------------------------------ #
     # Commandes

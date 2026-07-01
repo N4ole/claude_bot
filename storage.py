@@ -16,9 +16,11 @@ from threading import Lock
 _STORE_PATH = Path(__file__).parent / "watched.json"
 _OWNERS_PATH = Path(__file__).parent / "owners.json"
 _WARNS_PATH = Path(__file__).parent / "warns.json"
+_CONFINE_PATH = Path(__file__).parent / "confinements.json"
 _lock = Lock()
 _owners_lock = Lock()
 _warns_lock = Lock()
+_confine_lock = Lock()
 
 
 def _read() -> dict:
@@ -160,3 +162,51 @@ def set_warns(guild_id: int, user_id: int, count: int) -> None:
         else:
             guild[str(user_id)] = count
         _write_warns(data)
+
+
+# --------------------------------------------------------------------------- #
+# Confinements temporisés
+#   confinements.json = {guild_id: {user_id: release_timestamp_utc}}
+# --------------------------------------------------------------------------- #
+def _read_confinements() -> dict:
+    if not _CONFINE_PATH.exists():
+        return {}
+    try:
+        with _CONFINE_PATH.open("r", encoding="utf-8") as f:
+            return json.load(f)
+    except (json.JSONDecodeError, OSError):
+        return {}
+
+
+def _write_confinements(data: dict) -> None:
+    with _CONFINE_PATH.open("w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2)
+
+
+def set_confinement(guild_id: int, user_id: int, release_ts: float) -> None:
+    """Enregistre l'échéance (timestamp UTC) de libération d'un confinement."""
+    with _confine_lock:
+        data = _read_confinements()
+        data.setdefault(str(guild_id), {})[str(user_id)] = release_ts
+        _write_confinements(data)
+
+
+def clear_confinement(guild_id: int, user_id: int) -> None:
+    """Retire l'entrée de confinement temporisé d'un utilisateur."""
+    with _confine_lock:
+        data = _read_confinements()
+        guild = data.get(str(guild_id))
+        if guild and str(user_id) in guild:
+            del guild[str(user_id)]
+            if not guild:
+                del data[str(guild_id)]
+            _write_confinements(data)
+
+
+def get_confinements() -> list[tuple[int, int, float]]:
+    """Renvoie tous les confinements temporisés : (guild_id, user_id, ts)."""
+    result = []
+    for gid, users in _read_confinements().items():
+        for uid, ts in users.items():
+            result.append((int(gid), int(uid), float(ts)))
+    return result

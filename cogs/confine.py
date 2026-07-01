@@ -5,8 +5,16 @@ où seul l'utilisateur ciblé (et les administrateurs) peut accéder, et retire
 à l'utilisateur l'accès au reste du serveur.
 `unconfine` restaure l'accès et supprime le salon de confinement.
 """
+import asyncio
+import logging
+from datetime import datetime, timezone
+
 import discord
 from discord.ext import commands
+
+import storage
+
+log = logging.getLogger(__name__)
 
 CATEGORY_NAME = "confinement"
 
@@ -16,6 +24,51 @@ class Confine(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+        self._resumed = False
+
+    @commands.Cog.listener()
+    async def on_ready(self) -> None:
+        """Reprend les confinements temporisés persistés (une seule fois)."""
+        if self._resumed:
+            return
+        self._resumed = True
+        for guild_id, user_id, release_ts in storage.get_confinements():
+            self.bot.loop.create_task(
+                self._schedule_release(guild_id, user_id, release_ts)
+            )
+
+    async def _schedule_release(
+        self, guild_id: int, user_id: int, release_ts: float
+    ) -> None:
+        """Attend l'échéance puis libère le membre. Robuste au redémarrage."""
+        delay = release_ts - datetime.now(timezone.utc).timestamp()
+        if delay > 0:
+            try:
+                await asyncio.sleep(delay)
+            except asyncio.CancelledError:
+                return
+        guild = self.bot.get_guild(guild_id)
+        if guild is None:
+            # Serveur inaccessible : on nettoie l'entrée pour éviter une
+            # reprise infinie.
+            storage.clear_confinement(guild_id, user_id)
+            return
+        member = guild.get_member(user_id)
+        if member is not None:
+            await self.remove_confinement(guild, member)
+        else:
+            storage.clear_confinement(guild_id, user_id)
+
+    async def apply_temp_confinement(
+        self, guild: discord.Guild, member: discord.Member, until: datetime
+    ) -> None:
+        """Confine un membre jusqu'à une date précise (persistée sur disque)."""
+        await self.apply_confinement(guild, member)
+        release_ts = until.timestamp()
+        storage.set_confinement(guild.id, member.id, release_ts)
+        self.bot.loop.create_task(
+            self._schedule_release(guild.id, member.id, release_ts)
+        )
 
     def _find_confine_channel(
         self, guild: discord.Guild, member_id: int
@@ -95,6 +148,9 @@ class Confine(commands.Cog):
     ) -> bool:
         """Libère un membre. Renvoie True si un confinement a été retiré."""
         channel = self._find_confine_channel(guild, member.id)
+
+        # Retire une éventuelle temporisation persistée.
+        storage.clear_confinement(guild.id, member.id)
 
         # Restaure l'accès : retire les overwrites de refus posés sur le membre.
         for category in guild.categories:
