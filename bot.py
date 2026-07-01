@@ -71,16 +71,22 @@ class ClaudeBot(commands.Bot):
                 log.exception("Échec du chargement du cog : %s", extension)
 
     async def _sync_commands(self) -> None:
-        """Synchronise l'arbre des commandes slash avec Discord."""
+        """Synchronise l'arbre des commandes slash (serveur de dev + global).
+
+        Si GUILD_ID est défini, on synchronise en priorité sur ce serveur pour
+        une mise à jour instantanée pendant le développement, puis on
+        synchronise aussi globalement (utilisable partout, y compris en MP).
+        """
         if config.GUILD_ID:
             guild = discord.Object(id=config.GUILD_ID)
             self.tree.copy_global_to(guild=guild)
-            synced = await self.tree.sync(guild=guild)
+            guild_synced = await self.tree.sync(guild=guild)
             log.info("%d commandes slash synchronisées sur le serveur %s",
-                     len(synced), config.GUILD_ID)
-        else:
-            synced = await self.tree.sync()
-            log.info("%d commandes slash synchronisées globalement", len(synced))
+                     len(guild_synced), config.GUILD_ID)
+
+        global_synced = await self.tree.sync()
+        log.info("%d commandes slash synchronisées globalement",
+                 len(global_synced))
 
     async def on_ready(self) -> None:
         log.info("Connecté en tant que %s (id: %s)", self.user, self.user.id)
