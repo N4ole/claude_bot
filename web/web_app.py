@@ -379,18 +379,34 @@ load();
 # --------------------------------------------------------------------------- #
 # Pages légales publiques
 # --------------------------------------------------------------------------- #
-def _legal_page(title: str, body: str) -> str:
+def _legal_page(title: str, fr_body: str, en_body: str) -> str:
     return (
         "<!DOCTYPE html><html lang=\"fr\"><head><meta charset=\"utf-8\">"
         f"<title>ClaudeBot — {title}</title><style>" + _NEON_CSS + """
  body{max-width:820px;margin:auto;padding:32px 24px;line-height:1.6}
  h1{margin-bottom:4px}
  h2{margin-top:28px}
- .card{padding:28px}
+ .card{padding:28px;position:relative}
+ #lang{position:absolute;top:20px;right:20px}
  footer{margin-top:30px;font-size:.85em;opacity:.7;text-align:center}
-</style></head><body><div class="card">""" + body + """
- <footer><a href="/">Accueil</a> · <a href="/privacy">Confidentialité</a> ·
- <a href="/terms">Conditions</a></footer>
+</style></head><body><div class="card">
+ <button class="btn" id="lang" onclick="toggleLang()">English</button>
+ <div id="fr">""" + fr_body + """</div>
+ <div id="en" style="display:none">""" + en_body + """</div>
+ <footer><a href="/">Accueil / Home</a> ·
+ <a href="/privacy">Confidentialité / Privacy</a> ·
+ <a href="/terms">Conditions / Terms</a></footer>
+<script>
+function toggleLang(){
+ const fr=document.getElementById('fr'),en=document.getElementById('en'),
+   btn=document.getElementById('lang');
+ const showEn=fr.style.display!=='none';
+ fr.style.display=showEn?'none':'';
+ en.style.display=showEn?'':'none';
+ btn.textContent=showEn?'Français':'English';
+ document.documentElement.lang=showEn?'en':'fr';
+}
+</script>
 </div></body></html>"""
     )
 
@@ -493,5 +509,94 @@ _TERMS_BODY = """
  acceptation de la version en vigueur.</p>
 """
 
-_PRIVACY_HTML = _legal_page("Confidentialité", _PRIVACY_BODY)
-_TERMS_HTML = _legal_page("Conditions d'utilisation", _TERMS_BODY)
+_PRIVACY_BODY_EN = """
+ <h1>Privacy Policy</h1>
+ <p><em>Last updated: 2026.</em></p>
+ <p>This policy describes the data processed by the Discord bot “ClaudeBot”
+ (“the Bot”) and how it is used.</p>
+
+ <h2>1. Data collected</h2>
+ <p>Depending on the features enabled by a server's administrators, the Bot may
+ store:</p>
+ <ul>
+   <li><strong>Discord identifiers</strong> (users, servers, channels, roles)
+   required to run commands;</li>
+   <li><strong>Moderation data</strong>: warnings, mutes, confinements and the
+   history of sanctions;</li>
+   <li><strong>Aggregated statistics</strong>: message counts, joins and
+   leaves, member counts (for activity charts);</li>
+   <li><strong>Server settings</strong> (enabled protections);</li>
+   <li><strong>Reminders</strong> you schedule;</li>
+   <li>When an administrator enables <strong>watching</strong> of a user, the
+   content of their messages, reactions, nickname and status changes, and voice
+   activity are copied into a private channel of the relevant server.</li>
+ </ul>
+ <p>The Bot only accesses message content for the automoderation and watching
+ features described above.</p>
+
+ <h2>2. Web panel login</h2>
+ <p>The admin panel uses Discord authentication (OAuth2). The Bot then reads
+ your identifier, username and the list of your servers to verify your access
+ rights. None of this information is sold or shared with third parties.</p>
+
+ <h2>3. Purposes</h2>
+ <p>Data is used solely to operate the Bot (moderation, statistics, reminders)
+ and is not used for advertising.</p>
+
+ <h2>4. Retention</h2>
+ <p>Data is kept as long as necessary for the service. Activity statistics are
+ automatically purged after 60 days. An administrator can delete data related
+ to a feature by disabling it (e.g. <code>unwatch</code>, <code>unwarn</code>).</p>
+
+ <h2>5. Sharing</h2>
+ <p>Data is not shared with third parties. It remains stored by the Bot's host
+ and, for watching, within the relevant Discord server.</p>
+
+ <h2>6. Your rights</h2>
+ <p>You may request deletion of your data by contacting a server administrator
+ or the Bot operator. Removing the Bot from a server stops any further
+ collection for that server.</p>
+
+ <h2>7. Contact</h2>
+ <p>For any question about this data, contact the Bot operator through the
+ support server or the <code>contactowner</code> command.</p>
+"""
+
+_TERMS_BODY_EN = """
+ <h1>Terms of Service</h1>
+ <p><em>Last updated: 2026.</em></p>
+ <p>By adding or using the “ClaudeBot” bot (“the Bot”), you accept these terms.</p>
+
+ <h2>1. Service</h2>
+ <p>The Bot provides moderation, utility and statistics features for Discord
+ servers. It is provided “as is”, without warranty of availability or absence
+ of errors.</p>
+
+ <h2>2. Acceptable use</h2>
+ <ul>
+   <li>Comply with the <a href="https://discord.com/terms">Discord Terms</a> and
+   <a href="https://discord.com/guidelines">Community Guidelines</a>;</li>
+   <li>Do not use the Bot to harass, spy abusively, or break the law;</li>
+   <li>Watching and moderation features must be used responsibly and in
+   compliance with applicable law and transparency towards your members.</li>
+ </ul>
+
+ <h2>3. Liability</h2>
+ <p>The Bot operator cannot be held liable for damages resulting from the use
+ or unavailability of the Bot, nor for how server administrators use it.</p>
+
+ <h2>4. Availability</h2>
+ <p>The service may be modified, suspended or discontinued at any time without
+ notice.</p>
+
+ <h2>5. Data</h2>
+ <p>Data processing is described in the
+ <a href="/privacy">Privacy Policy</a>.</p>
+
+ <h2>6. Changes</h2>
+ <p>These terms may change. Continued use of the Bot constitutes acceptance of
+ the version in force.</p>
+"""
+
+_PRIVACY_HTML = _legal_page("Confidentialité / Privacy", _PRIVACY_BODY, _PRIVACY_BODY_EN)
+_TERMS_HTML = _legal_page("Conditions / Terms", _TERMS_BODY, _TERMS_BODY_EN)
