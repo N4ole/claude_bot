@@ -10,20 +10,33 @@ par commande).
 claude_bot/
 ├── main.py          # Point d'entrée : lance le bot
 ├── bot.py           # Classe du bot + chargement automatique des cogs
-├── config.py        # Configuration (token, préfixe, guild id)
+├── config.py        # Configuration (token, préfixe, guild id, OAuth...)
 ├── requirements.txt
 ├── .env.example     # Modèle de configuration
-└── cogs/            # Un fichier par commande
+├── utils/           # Modules communs
+│   ├── storage.py       # Persistance (JSON)
+│   ├── checks.py        # Vérifications (is_owner...)
+│   ├── automod.py       # Logique anti-majuscules / anti-emojis
+│   └── badwords.py      # Dictionnaire anti-insulte
+├── web/             # Panel web
+│   ├── web_app.py       # Serveur aiohttp + OAuth2
+│   └── stats.py         # Statistiques (séries temporelles)
+├── data/            # Données runtime générées (JSON, ignoré par git)
+├── docs/            # Documentation (guide OAuth2...)
+└── cogs/            # Un fichier par commande / fonctionnalité
     ├── help.py
-    ├── bonjour.py
     ├── ping.py
     ├── watch.py
+    ├── ...
     └── owner/        # Commandes réservées aux owners du bot
         ├── manage.py     # addowner / rmowner / owners
         ├── reload.py     # reload
         ├── shutdown.py   # shutdown
         └── say.py        # say
 ```
+
+Les modules communs sont regroupés dans `utils/` et `web/` (packages Python) ;
+les fichiers de données générés à l'exécution sont dans `data/`.
 
 Les cogs sont chargés récursivement : ajouter un fichier dans `cogs/` **ou**
 dans un sous-dossier (comme `cogs/owner/`) suffit pour ajouter une commande.

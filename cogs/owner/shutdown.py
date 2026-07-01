@@ -1,7 +1,7 @@
 """Commande owner `shutdown` : éteint proprement le bot."""
 from discord.ext import commands
 
-import checks
+from utils import checks
 
 
 class Shutdown(commands.Cog):

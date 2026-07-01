@@ -13,12 +13,16 @@ import json
 from pathlib import Path
 from threading import Lock
 
-_STORE_PATH = Path(__file__).parent / "watched.json"
-_OWNERS_PATH = Path(__file__).parent / "owners.json"
-_WARNS_PATH = Path(__file__).parent / "warns.json"
-_CONFINE_PATH = Path(__file__).parent / "confinements.json"
-_SETTINGS_PATH = Path(__file__).parent / "guild_settings.json"
-_MODLOG_PATH = Path(__file__).parent / "modlog.json"
+# Dossier des données runtime (à la racine du projet).
+_DATA = Path(__file__).resolve().parents[1] / "data"
+_DATA.mkdir(exist_ok=True)
+
+_STORE_PATH = _DATA / "watched.json"
+_OWNERS_PATH = _DATA / "owners.json"
+_WARNS_PATH = _DATA / "warns.json"
+_CONFINE_PATH = _DATA / "confinements.json"
+_SETTINGS_PATH = _DATA / "guild_settings.json"
+_MODLOG_PATH = _DATA / "modlog.json"
 _lock = Lock()
 _owners_lock = Lock()
 _warns_lock = Lock()

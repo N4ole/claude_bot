@@ -12,7 +12,7 @@ import string
 import discord
 from discord.ext import commands
 
-import storage
+from utils import storage
 
 log = logging.getLogger(__name__)
 

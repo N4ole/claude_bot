@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 import discord
 from discord.ext import commands
 
-import storage
+from utils import storage
 
 _LABELS = {
     "warn": "⚠️ Avertissements",

@@ -2,7 +2,7 @@
 import discord
 from discord.ext import commands
 
-import checks
+from utils import checks
 import config
 
 

@@ -7,9 +7,9 @@ dans owners.json.
 import discord
 from discord.ext import commands
 
-import checks
+from utils import checks
 import config
-import storage
+from utils import storage
 
 
 class Owners(commands.Cog):

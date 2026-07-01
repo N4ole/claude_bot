@@ -48,7 +48,7 @@ class ClaudeBot(commands.Bot):
     @staticmethod
     async def _dm_owner_only(ctx: commands.Context) -> bool:
         """Check global : en MP, réserve les commandes aux owners du bot."""
-        import checks
+        from utils import checks
 
         if ctx.guild is not None:
             return True

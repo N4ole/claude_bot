@@ -5,8 +5,8 @@ from aiohttp import web
 from discord.ext import commands, tasks
 
 import config
-import stats
-import web_app
+from web import stats
+from web import web_app
 
 log = logging.getLogger(__name__)
 

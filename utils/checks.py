@@ -2,7 +2,7 @@
 from discord.ext import commands
 
 import config
-import storage
+from utils import storage
 
 
 def is_owner_id(user_id: int) -> bool:

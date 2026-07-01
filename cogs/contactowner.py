@@ -8,7 +8,7 @@ import discord
 from discord.ext import commands
 
 import config
-import storage
+from utils import storage
 
 
 class ContactOwner(commands.Cog):

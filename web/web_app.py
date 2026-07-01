@@ -14,9 +14,9 @@ import aiohttp
 import discord
 from aiohttp import web
 
-import checks
+from utils import checks
 import config
-import stats
+from web import stats
 
 DISCORD_API = "https://discord.com/api"
 ADMINISTRATOR = 0x8

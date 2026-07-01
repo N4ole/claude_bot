@@ -10,13 +10,7 @@ __pycache__/
 .Python
 
 # Données runtime
-watched.json
-owners.json
-warns.json
-confinements.json
-stats.json
-guild_settings.json
-modlog.json
+data/*.json
 
 # Logs
 *.log

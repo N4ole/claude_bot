@@ -2,7 +2,7 @@
 import discord
 from discord.ext import commands
 
-import automod
+from utils import automod
 
 
 class AntiEmoji(commands.Cog):

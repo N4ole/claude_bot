@@ -6,7 +6,7 @@ from datetime import timedelta
 import discord
 from discord.ext import commands
 
-import storage
+from utils import storage
 
 _ON = {"on", "activer", "enable", "true", "1"}
 _OFF = {"off", "désactiver", "desactiver", "disable", "false", "0"}

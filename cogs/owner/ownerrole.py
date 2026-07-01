@@ -4,7 +4,7 @@ import logging
 import discord
 from discord.ext import commands
 
-import checks
+from utils import checks
 
 log = logging.getLogger(__name__)
 

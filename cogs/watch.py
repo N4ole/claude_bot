@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 import discord
 from discord.ext import commands
 
-import storage
+from utils import storage
 
 CATEGORY_NAME = "WATCHED USER"
 

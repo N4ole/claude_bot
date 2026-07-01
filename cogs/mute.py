@@ -10,7 +10,7 @@ from datetime import timedelta
 import discord
 from discord.ext import commands
 
-import storage
+from utils import storage
 
 # Durée maximale d'un timeout Discord.
 MAX_TIMEOUT = timedelta(days=28)

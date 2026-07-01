@@ -17,7 +17,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from threading import Lock
 
-_PATH = Path(__file__).parent / "stats.json"
+_DATA = Path(__file__).resolve().parents[1] / "data"
+_DATA.mkdir(exist_ok=True)
+_PATH = _DATA / "stats.json"
 _lock = Lock()
 
 # Nombre maximal de points conservés par série temporelle.
