@@ -25,6 +25,9 @@ class UserInfo(commands.Cog):
         self, ctx: commands.Context, member: discord.Member = None
     ) -> None:
         member = member or ctx.author
+        # Un membre résolu via une commande slash ne porte pas la présence :
+        # on récupère la version en cache pour obtenir le vrai statut.
+        member = ctx.guild.get_member(member.id) or member
 
         embed = discord.Embed(
             title=f"Informations sur {member}",

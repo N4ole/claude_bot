@@ -40,8 +40,19 @@ class ClaudeBot(commands.Bot):
 
     async def setup_hook(self) -> None:
         """Charge les cogs et synchronise les commandes slash au démarrage."""
+        # En message privé, seuls les owners du bot peuvent lancer des commandes.
+        self.add_check(self._dm_owner_only)
         await self._load_cogs()
         await self._sync_commands()
+
+    @staticmethod
+    async def _dm_owner_only(ctx: commands.Context) -> bool:
+        """Check global : en MP, réserve les commandes aux owners du bot."""
+        import checks
+
+        if ctx.guild is not None:
+            return True
+        return checks.is_owner_id(ctx.author.id)
 
     async def _load_cogs(self) -> None:
         """Charge chaque fichier .py de cogs/ et de ses sous-dossiers."""
