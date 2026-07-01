@@ -57,7 +57,6 @@ python main.py
 | `COMMAND_PREFIX` | Préfixe des commandes texte                                       | `§`    |
 | `GUILD_ID`       | ID d'un serveur pour synchroniser les slash instantanément (dev) | global |
 | `OWNER_ID`       | ID Discord de l'owner principal du bot                           | —      |
-| `DEBUG`          | Active le mode debug (`1`/`true`/`yes`/`on`)                     | `false`|
 
 > Sans `GUILD_ID`, les commandes slash sont synchronisées globalement, ce qui
 > peut prendre jusqu'à une heure la première fois.
@@ -77,7 +76,8 @@ chargé automatiquement au démarrage.
 | `userinfo [membre]` | Affiche les informations détaillées d'un utilisateur (défaut : soi-même) |
 | `avatar [membre]`   | Affiche l'avatar d'un utilisateur (avec liens PNG/JPG/WEBP/GIF) |
 | `uptime`   | Affiche depuis combien de temps le bot tourne |
-| `status`   | Version, ping, nombre de serveurs et état du mode debug |
+| `status`   | Version, ping et nombre de serveurs |
+| `contactowner <message>` | Réservée au **propriétaire du serveur** : envoie le message en MP à tous les owners du bot, avec les infos du serveur et une invitation. |
 
 ### Commandes d'administration
 

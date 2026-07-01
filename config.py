@@ -21,6 +21,3 @@ OWNER_ID = int(_owner_id) if _owner_id and _owner_id.isdigit() else None
 
 # Version du bot.
 VERSION = "1.0.0"
-
-# Mode debug (activé si DEBUG=1/true/yes/on).
-DEBUG = os.getenv("DEBUG", "false").lower() in ("1", "true", "yes", "on")

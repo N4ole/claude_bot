@@ -13,7 +13,7 @@ class Status(commands.Cog):
 
     @commands.hybrid_command(
         name="status",
-        description="Version, ping, nombre de serveurs et état du mode debug.",
+        description="Version, ping et nombre de serveurs.",
     )
     async def status(self, ctx: commands.Context) -> None:
         embed = discord.Embed(
@@ -26,11 +26,6 @@ class Status(commands.Cog):
         )
         embed.add_field(
             name="Serveurs", value=str(len(self.bot.guilds)), inline=True
-        )
-        embed.add_field(
-            name="Mode debug",
-            value="🟢 Activé" if config.DEBUG else "⚫ Désactivé",
-            inline=True,
         )
         await ctx.send(embed=embed)
 
