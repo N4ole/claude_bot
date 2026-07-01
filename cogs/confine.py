@@ -30,18 +30,12 @@ class Confine(commands.Cog):
                 return channel
         return None
 
-    @commands.hybrid_command(
-        name="confine",
-        description="Isole un utilisateur dans un salon de confinement.",
-    )
-    @commands.guild_only()
-    @commands.has_permissions(administrator=True)
-    async def confine(self, ctx: commands.Context, member: discord.Member) -> None:
-        guild = ctx.guild
-
+    async def apply_confinement(
+        self, guild: discord.Guild, member: discord.Member
+    ) -> discord.TextChannel | None:
+        """Confine un membre. Renvoie le salon créé, ou None si déjà confiné."""
         if self._find_confine_channel(guild, member.id) is not None:
-            await ctx.send(f"⚠️ {member.mention} est déjà confiné.")
-            return
+            return None
 
         # Retire l'accès au reste du serveur : deny view_channel sur chaque
         # catégorie et sur les salons hors catégorie. Les salons synchronisés
@@ -90,11 +84,55 @@ class Confine(commands.Cog):
             overwrites=overwrites,
             topic=f"Confinement de {member} (id: {member.id})",
         )
-
         await channel.send(
             f"🔒 {member.mention} tu es confiné. Seuls les administrateurs "
             "peuvent te voir ici."
         )
+        return channel
+
+    async def remove_confinement(
+        self, guild: discord.Guild, member: discord.Member
+    ) -> bool:
+        """Libère un membre. Renvoie True si un confinement a été retiré."""
+        channel = self._find_confine_channel(guild, member.id)
+
+        # Restaure l'accès : retire les overwrites de refus posés sur le membre.
+        for category in guild.categories:
+            if not category.overwrites_for(member).is_empty():
+                try:
+                    await category.set_permissions(
+                        member, overwrite=None, reason="Fin du confinement"
+                    )
+                except discord.HTTPException:
+                    pass
+        for chan in guild.channels:
+            if chan.category is None and not chan.overwrites_for(member).is_empty():
+                try:
+                    await chan.set_permissions(
+                        member, overwrite=None, reason="Fin du confinement"
+                    )
+                except discord.HTTPException:
+                    pass
+
+        if channel is not None:
+            category = channel.category
+            await channel.delete(reason="Fin du confinement")
+            if category is not None and not category.channels:
+                await category.delete(reason="Confinement vide")
+            return True
+        return False
+
+    @commands.hybrid_command(
+        name="confine",
+        description="Isole un utilisateur dans un salon de confinement.",
+    )
+    @commands.guild_only()
+    @commands.has_permissions(administrator=True)
+    async def confine(self, ctx: commands.Context, member: discord.Member) -> None:
+        channel = await self.apply_confinement(ctx.guild, member)
+        if channel is None:
+            await ctx.send(f"⚠️ {member.mention} est déjà confiné.")
+            return
         await ctx.send(
             f"🔒 {member.mention} a été confiné dans {channel.mention}."
         )
@@ -106,36 +144,7 @@ class Confine(commands.Cog):
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
     async def unconfine(self, ctx: commands.Context, member: discord.Member) -> None:
-        guild = ctx.guild
-        channel = self._find_confine_channel(guild, member.id)
-
-        # Restaure l'accès : retire les overwrites de refus posés sur le membre.
-        for category in guild.categories:
-            if category.overwrites_for(member).is_empty() is False:
-                try:
-                    await category.set_permissions(
-                        member, overwrite=None, reason="Fin du confinement"
-                    )
-                except discord.HTTPException:
-                    pass
-        for chan in guild.channels:
-            if chan.category is None and (
-                not chan.overwrites_for(member).is_empty()
-            ):
-                try:
-                    await chan.set_permissions(
-                        member, overwrite=None, reason="Fin du confinement"
-                    )
-                except discord.HTTPException:
-                    pass
-
-        # Supprime le salon de confinement (et la catégorie si vide).
-        if channel is not None:
-            category = channel.category
-            await channel.delete(reason="Fin du confinement")
-            if category is not None and not category.channels:
-                await category.delete(reason="Confinement vide")
-
+        await self.remove_confinement(ctx.guild, member)
         await ctx.send(f"🔓 {member.mention} a été libéré du confinement.")
 
     @confine.error

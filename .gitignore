@@ -12,6 +12,7 @@ __pycache__/
 # Données runtime
 watched.json
 owners.json
+warns.json
 
 # Logs
 *.log

@@ -15,8 +15,10 @@ from threading import Lock
 
 _STORE_PATH = Path(__file__).parent / "watched.json"
 _OWNERS_PATH = Path(__file__).parent / "owners.json"
+_WARNS_PATH = Path(__file__).parent / "warns.json"
 _lock = Lock()
 _owners_lock = Lock()
+_warns_lock = Lock()
 
 
 def _read() -> dict:
@@ -111,3 +113,50 @@ def remove_owner(user_id: int) -> bool:
         owners.remove(user_id)
         _write_owners(owners)
         return True
+
+
+# --------------------------------------------------------------------------- #
+# Avertissements (warns.json = {guild_id: {user_id: count}})
+# --------------------------------------------------------------------------- #
+def _read_warns() -> dict:
+    if not _WARNS_PATH.exists():
+        return {}
+    try:
+        with _WARNS_PATH.open("r", encoding="utf-8") as f:
+            return json.load(f)
+    except (json.JSONDecodeError, OSError):
+        return {}
+
+
+def _write_warns(data: dict) -> None:
+    with _WARNS_PATH.open("w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2)
+
+
+def get_warns(guild_id: int, user_id: int) -> int:
+    """Renvoie le nombre d'avertissements d'un utilisateur."""
+    return _read_warns().get(str(guild_id), {}).get(str(user_id), 0)
+
+
+def add_warn(guild_id: int, user_id: int) -> int:
+    """Incrémente les avertissements d'un utilisateur et renvoie le total."""
+    with _warns_lock:
+        data = _read_warns()
+        guild = data.setdefault(str(guild_id), {})
+        guild[str(user_id)] = guild.get(str(user_id), 0) + 1
+        _write_warns(data)
+        return guild[str(user_id)]
+
+
+def set_warns(guild_id: int, user_id: int, count: int) -> None:
+    """Fixe le nombre d'avertissements (supprime l'entrée si <= 0)."""
+    with _warns_lock:
+        data = _read_warns()
+        guild = data.setdefault(str(guild_id), {})
+        if count <= 0:
+            guild.pop(str(user_id), None)
+            if not guild:
+                data.pop(str(guild_id), None)
+        else:
+            guild[str(user_id)] = count
+        _write_warns(data)

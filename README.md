@@ -85,6 +85,27 @@ Réservées aux membres possédant la permission **Administrateur**.
 | `watchlist`         | Liste les utilisateurs surveillés sur le serveur.               |
 | `confine <membre>`  | Isole un utilisateur : crée la catégorie `confinement` et un salon `confin-<user>` où seuls lui et les admins accèdent, et retire son accès au reste du serveur. |
 | `unconfine <membre>`| Libère l'utilisateur : restaure son accès et supprime le salon de confinement. |
+| `warn <membre>`     | Avertit un utilisateur (sanction progressive, voir ci-dessous). |
+| `unwarn <membre>`   | Retire un avertissement et lève les sanctions temporaires.      |
+| `warns <membre>`    | Affiche le nombre d'avertissements d'un utilisateur.            |
+
+#### Barème des avertissements
+
+Chaque niveau attribue un rôle `Warn N` (sans permission) qui remplace le
+précédent, et applique une sanction :
+
+| Niveau | Sanction |
+|--------|----------|
+| 1 | Simple avertissement |
+| 2 | Mute (timeout) 5 minutes |
+| 3 | Mute (timeout) 1 heure |
+| 4 | Confinement pendant une semaine |
+| 5 | Bannissement permanent |
+
+> Le compteur est persistant (`warns.json`). Le bot a besoin des permissions
+> **Gérer les rôles**, **Expulser les membres/Timeout** (`moderate_members`) et
+> **Bannir** selon les niveaux. La libération automatique du confinement (niveau
+> 4) est planifiée en mémoire et ne survit pas à un redémarrage du bot.
 
 > Le salon de log n'est visible que par les administrateurs et le bot.
 > La surveillance persiste entre les redémarrages (`watched.json`).
