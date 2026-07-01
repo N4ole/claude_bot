@@ -47,6 +47,7 @@ python main.py
 | `DISCORD_TOKEN`  | Token du bot (obligatoire)                                        | —      |
 | `COMMAND_PREFIX` | Préfixe des commandes texte                                       | `§`    |
 | `GUILD_ID`       | ID d'un serveur pour synchroniser les slash instantanément (dev) | global |
+| `OWNER_ID`       | ID Discord de l'owner principal du bot                           | —      |
 
 > Sans `GUILD_ID`, les commandes slash sont synchronisées globalement, ce qui
 > peut prendre jusqu'à une heure la première fois.
@@ -76,6 +77,21 @@ Réservées aux membres possédant la permission **Administrateur**.
 
 > Le salon de log n'est visible que par les administrateurs et le bot.
 > La surveillance persiste entre les redémarrages (`watched.json`).
+
+### Commandes d'owner
+
+Réservées aux **owners du bot** (l'owner principal `OWNER_ID` du `.env`, plus
+les owners additionnels). Fonctionnent partout, indépendamment des permissions
+du serveur.
+
+| Commande            | Description                                                     |
+|---------------------|-----------------------------------------------------------------|
+| `addowner <user>`   | Ajoute un owner additionnel (stocké dans `owners.json`).        |
+| `rmowner <user>`    | Retire un owner additionnel (l'owner principal est protégé).    |
+| `owners`            | Liste tous les owners du bot.                                   |
+
+> L'owner principal est défini par `OWNER_ID` dans le `.env` et ne peut pas
+> être retiré. Les owners additionnels persistent dans `owners.json`.
 >
 > **Intents requis** (à activer dans le portail développeur Discord) :
 > *MESSAGE CONTENT*, *SERVER MEMBERS* et *PRESENCE/VOICE* — le bot demande

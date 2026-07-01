@@ -14,7 +14,9 @@ from pathlib import Path
 from threading import Lock
 
 _STORE_PATH = Path(__file__).parent / "watched.json"
+_OWNERS_PATH = Path(__file__).parent / "owners.json"
 _lock = Lock()
+_owners_lock = Lock()
 
 
 def _read() -> dict:
@@ -63,3 +65,49 @@ def get_guild_watches(guild_id: int) -> dict[int, int]:
         int(uid): cid
         for uid, cid in _read().get(str(guild_id), {}).items()
     }
+
+
+# --------------------------------------------------------------------------- #
+# Owners additionnels (owners.json = liste d'IDs)
+# --------------------------------------------------------------------------- #
+def _read_owners() -> list[int]:
+    if not _OWNERS_PATH.exists():
+        return []
+    try:
+        with _OWNERS_PATH.open("r", encoding="utf-8") as f:
+            data = json.load(f)
+        return [int(x) for x in data]
+    except (json.JSONDecodeError, OSError, ValueError, TypeError):
+        return []
+
+
+def _write_owners(owners: list[int]) -> None:
+    with _OWNERS_PATH.open("w", encoding="utf-8") as f:
+        json.dump(owners, f, indent=2)
+
+
+def get_owners() -> list[int]:
+    """Renvoie la liste des owners additionnels (hors owner principal)."""
+    return _read_owners()
+
+
+def add_owner(user_id: int) -> bool:
+    """Ajoute un owner. Renvoie False s'il était déjà présent."""
+    with _owners_lock:
+        owners = _read_owners()
+        if user_id in owners:
+            return False
+        owners.append(user_id)
+        _write_owners(owners)
+        return True
+
+
+def remove_owner(user_id: int) -> bool:
+    """Retire un owner. Renvoie False s'il n'était pas présent."""
+    with _owners_lock:
+        owners = _read_owners()
+        if user_id not in owners:
+            return False
+        owners.remove(user_id)
+        _write_owners(owners)
+        return True
