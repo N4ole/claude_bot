@@ -18,8 +18,13 @@ class ClaudeBot(commands.Bot):
 
     def __init__(self) -> None:
         intents = discord.Intents.default()
-        # Nécessaire pour lire le contenu des messages (commandes préfixe).
+        # Nécessaire pour lire le contenu des messages (commandes préfixe
+        # et copie des messages surveillés).
         intents.message_content = True
+        # Nécessaire pour résoudre les membres (commande watch).
+        intents.members = True
+        # Nécessaire pour suivre les connexions/déconnexions vocales.
+        intents.voice_states = True
 
         super().__init__(
             command_prefix=commands.when_mentioned_or(config.PREFIX),
