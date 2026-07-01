@@ -1,0 +1,153 @@
+"""Commandes admin `confine` / `unconfine` : isole un utilisateur.
+
+`confine` crée une catégorie « confinement » et un salon « confin-<user> »
+où seul l'utilisateur ciblé (et les administrateurs) peut accéder, et retire
+à l'utilisateur l'accès au reste du serveur.
+`unconfine` restaure l'accès et supprime le salon de confinement.
+"""
+import discord
+from discord.ext import commands
+
+CATEGORY_NAME = "confinement"
+
+
+class Confine(commands.Cog):
+    """Confinement d'utilisateurs (réservé aux administrateurs)."""
+
+    def __init__(self, bot: commands.Bot) -> None:
+        self.bot = bot
+
+    def _find_confine_channel(
+        self, guild: discord.Guild, member_id: int
+    ) -> discord.TextChannel | None:
+        """Retrouve le salon de confinement d'un membre via son topic."""
+        category = discord.utils.get(guild.categories, name=CATEGORY_NAME)
+        if category is None:
+            return None
+        marker = f"id: {member_id}"
+        for channel in category.text_channels:
+            if channel.topic and marker in channel.topic:
+                return channel
+        return None
+
+    @commands.hybrid_command(
+        name="confine",
+        description="Isole un utilisateur dans un salon de confinement.",
+    )
+    @commands.guild_only()
+    @commands.has_permissions(administrator=True)
+    async def confine(self, ctx: commands.Context, member: discord.Member) -> None:
+        guild = ctx.guild
+
+        if self._find_confine_channel(guild, member.id) is not None:
+            await ctx.send(f"⚠️ {member.mention} est déjà confiné.")
+            return
+
+        # Retire l'accès au reste du serveur : deny view_channel sur chaque
+        # catégorie et sur les salons hors catégorie. Les salons synchronisés
+        # avec leur catégorie héritent automatiquement de ce refus.
+        deny = discord.PermissionOverwrite(view_channel=False)
+        for category in guild.categories:
+            try:
+                await category.set_permissions(
+                    member, overwrite=deny, reason="Confinement"
+                )
+            except discord.HTTPException:
+                pass
+        for channel in guild.channels:
+            if channel.category is None:
+                try:
+                    await channel.set_permissions(
+                        member, overwrite=deny, reason="Confinement"
+                    )
+                except discord.HTTPException:
+                    pass
+
+        # Crée (ou récupère) la catégorie de confinement, masquée à tous.
+        category = discord.utils.get(guild.categories, name=CATEGORY_NAME)
+        if category is None:
+            category = await guild.create_category(
+                CATEGORY_NAME,
+                overwrites={
+                    guild.default_role: discord.PermissionOverwrite(
+                        view_channel=False
+                    )
+                },
+            )
+
+        # Salon visible uniquement par l'utilisateur confiné et le bot
+        # (les administrateurs y accèdent via leur permission).
+        overwrites = {
+            guild.default_role: discord.PermissionOverwrite(view_channel=False),
+            guild.me: discord.PermissionOverwrite(view_channel=True),
+            member: discord.PermissionOverwrite(
+                view_channel=True, send_messages=True, read_message_history=True
+            ),
+        }
+        channel = await guild.create_text_channel(
+            name=f"confin-{member.name}",
+            category=category,
+            overwrites=overwrites,
+            topic=f"Confinement de {member} (id: {member.id})",
+        )
+
+        await channel.send(
+            f"🔒 {member.mention} tu es confiné. Seuls les administrateurs "
+            "peuvent te voir ici."
+        )
+        await ctx.send(
+            f"🔒 {member.mention} a été confiné dans {channel.mention}."
+        )
+
+    @commands.hybrid_command(
+        name="unconfine",
+        description="Libère un utilisateur du confinement.",
+    )
+    @commands.guild_only()
+    @commands.has_permissions(administrator=True)
+    async def unconfine(self, ctx: commands.Context, member: discord.Member) -> None:
+        guild = ctx.guild
+        channel = self._find_confine_channel(guild, member.id)
+
+        # Restaure l'accès : retire les overwrites de refus posés sur le membre.
+        for category in guild.categories:
+            if category.overwrites_for(member).is_empty() is False:
+                try:
+                    await category.set_permissions(
+                        member, overwrite=None, reason="Fin du confinement"
+                    )
+                except discord.HTTPException:
+                    pass
+        for chan in guild.channels:
+            if chan.category is None and (
+                not chan.overwrites_for(member).is_empty()
+            ):
+                try:
+                    await chan.set_permissions(
+                        member, overwrite=None, reason="Fin du confinement"
+                    )
+                except discord.HTTPException:
+                    pass
+
+        # Supprime le salon de confinement (et la catégorie si vide).
+        if channel is not None:
+            category = channel.category
+            await channel.delete(reason="Fin du confinement")
+            if category is not None and not category.channels:
+                await category.delete(reason="Confinement vide")
+
+        await ctx.send(f"🔓 {member.mention} a été libéré du confinement.")
+
+    @confine.error
+    @unconfine.error
+    async def _error(self, ctx: commands.Context, error) -> None:
+        if isinstance(error, commands.MissingPermissions):
+            await ctx.send("⛔ Cette commande est réservée aux administrateurs.")
+        elif isinstance(error, commands.MemberNotFound):
+            await ctx.send("❌ Utilisateur introuvable.")
+        else:
+            raise error
+
+
+async def setup(bot: commands.Bot) -> None:
+    await bot.add_cog(Confine(bot))

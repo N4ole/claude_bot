@@ -25,10 +25,15 @@ class Help(commands.Cog):
             color=discord.Color.blurple(),
         )
 
-        # Liste chaque commande enregistrée (hors commande masquée).
-        for command in sorted(self.bot.commands, key=lambda c: c.name):
-            if command.hidden:
-                continue
+        # Liste chaque commande enregistrée, hors commandes masquées et
+        # hors commandes d'owner (dossier cogs/owner/).
+        shown = [
+            command
+            for command in sorted(self.bot.commands, key=lambda c: c.name)
+            if not command.hidden
+            and not (command.module and command.module.startswith("cogs.owner"))
+        ]
+        for command in shown:
             description = command.description or "Pas de description."
             embed.add_field(
                 name=f"{config.PREFIX}{command.name}",
@@ -36,7 +41,7 @@ class Help(commands.Cog):
                 inline=False,
             )
 
-        embed.set_footer(text=f"{len(self.bot.commands)} commande(s) disponible(s)")
+        embed.set_footer(text=f"{len(shown)} commande(s) disponible(s)")
         await ctx.send(embed=embed)
 
 
