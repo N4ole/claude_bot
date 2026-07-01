@@ -1,0 +1,21 @@
+# 🛡️ Modération
+
+- [`§analyse`](../commands/analyse.md) — Graphique d'activité du serveur sur 7 jours. — 🔒 *Administrateur*
+- [`§antibot`](../commands/antibot.md) — Active/désactive le blocage des bots (on/off). — 🔒 *Administrateur*
+- [`§antiinsulte`](../commands/antiinsulte.md) — Active/désactive la suppression des insultes (on/off). — 🔒 *Administrateur*
+- [`§antipub`](../commands/antipub.md) — Active/désactive la suppression des invitations Discord (on/off). — 🔒 *Administrateur*
+- [`§antiraid`](../commands/antiraid.md) — Active/désactive le captcha à l'arrivée (on/off). — 🔒 *Administrateur*
+- [`§antispam`](../commands/antispam.md) — Active/désactive l'anti-spam (on/off). — 🔒 *Administrateur*
+- [`§clear`](../commands/clear.md) — Supprime un nombre de messages du salon (max 100). — 🔒 *Gérer les messages*
+- [`§confine`](../commands/confine.md) — Isole un utilisateur dans un salon de confinement. — 🔒 *Administrateur*
+- [`§mute`](../commands/mute.md) — Coupe la parole à un utilisateur pour une durée (ex: 5m, 1h30m). — 🔒 *Administrateur*
+- [`§protections`](../commands/protections.md) — Affiche l'état des protections du serveur. — 🔒 *Administrateur*
+- [`§unconfine`](../commands/unconfine.md) — Libère un utilisateur du confinement. — 🔒 *Administrateur*
+- [`§unmute`](../commands/unmute.md) — Rend la parole à un utilisateur mute. — 🔒 *Administrateur*
+- [`§unwarn`](../commands/unwarn.md) — Retire un avertissement à un utilisateur. — 🔒 *Administrateur*
+- [`§unwatch`](../commands/unwatch.md) — Arrête la surveillance d'un utilisateur. — 🔒 *Administrateur*
+- [`§userstatus`](../commands/userstatus.md) — Affiche l'historique des sanctions d'un utilisateur. — 🔒 *Administrateur*
+- [`§warn`](../commands/warn.md) — Avertit un utilisateur (sanction progressive). — 🔒 *Administrateur*
+- [`§warns`](../commands/warns.md) — Affiche le nombre d'avertissements d'un utilisateur. — 🔒 *Administrateur*
+- [`§watch`](../commands/watch.md) — Surveille un utilisateur et journalise son activité. — 🔒 *Administrateur*
+- [`§watchlist`](../commands/watchlist.md) — Liste les utilisateurs actuellement surveillés. — 🔒 *Administrateur*

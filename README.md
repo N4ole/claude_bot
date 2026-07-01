@@ -38,6 +38,16 @@ claude_bot/
 Les modules communs sont regroupés dans `utils/` et `web/` (packages Python) ;
 les fichiers de données générés à l'exécution sont dans `data/`.
 
+## Documentation
+
+Documentation détaillée dans [`docs/`](docs/README.md), sur trois axes :
+- **Par commande** — [`docs/commands/`](docs/commands/README.md) (une fiche par commande, générée automatiquement)
+- **Par catégorie** — [`docs/categories/`](docs/categories/README.md)
+- **Par système** — [`docs/systems/`](docs/systems/README.md) (fonctionnement, persistance, permissions)
+
+Régénérer les fiches par commande/catégorie après un changement :
+`python -m scripts.gen_docs`.
+
 Les cogs sont chargés récursivement : ajouter un fichier dans `cogs/` **ou**
 dans un sous-dossier (comme `cogs/owner/`) suffit pour ajouter une commande.
 
