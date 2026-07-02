@@ -88,6 +88,21 @@ class ClaudeBot(commands.Bot):
         log.info("%d commandes slash synchronisées globalement",
                  len(global_synced))
 
+    async def on_error(self, event_method: str, /, *args, **kwargs) -> None:
+        """Capture les erreurs d'événements : trace en logs + MP aux owners.
+
+        Les erreurs de listeners ne sont pas dispatchées : on les journalise
+        (fichiers + console live) puis on délègue au cog ErrorReport, qui
+        prévient les owners en message privé.
+        """
+        log.exception("Erreur non gérée dans l'événement %s", event_method)
+        cog = self.get_cog("ErrorReport")
+        if cog is not None:
+            try:
+                await cog.report_event_error(event_method)
+            except Exception:  # noqa: BLE001
+                log.exception("Échec du rapport d'erreur d'événement")
+
     async def on_ready(self) -> None:
         log.info("Connecté en tant que %s (id: %s)", self.user, self.user.id)
         await self.change_presence(

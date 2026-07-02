@@ -12,6 +12,14 @@ def is_owner_id(user_id: int) -> bool:
     return user_id in storage.get_owners()
 
 
+def all_owner_ids() -> list[int]:
+    """Liste des IDs de tous les owners (principal en tête, puis additionnels)."""
+    ids = list(storage.get_owners())
+    if config.OWNER_ID is not None and config.OWNER_ID not in ids:
+        ids.insert(0, config.OWNER_ID)
+    return ids
+
+
 def is_owner():
     """Check de commande : réservé aux owners du bot."""
 
