@@ -75,9 +75,11 @@ class Logs(commands.Cog):
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(manage_channels=True)
-    async def logs(self, ctx: commands.Context, etat: str, type: str) -> None:
+    async def logs(
+        self, ctx: commands.Context, etat: str, categorie: str
+    ) -> None:
         value = etat.lower()
-        raw = type.lower().strip()
+        raw = categorie.lower().strip()
 
         if raw == "all":
             tokens = list(categories.TYPE_TO_CAT)

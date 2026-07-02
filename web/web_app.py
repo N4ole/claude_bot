@@ -35,23 +35,31 @@ def _get_session(request: web.Request) -> dict | None:
     return _sessions.get(token) if token else None
 
 
-def _set_session(response: web.Response, data: dict) -> None:
+def _is_secure(request: web.Request) -> bool:
+    """True si la requête est servie en HTTPS (directement ou via un proxy)."""
+    proto = request.headers.get("X-Forwarded-Proto", request.scheme)
+    return proto == "https"
+
+
+def _set_session(response: web.Response, data: dict, *, secure: bool) -> None:
     token = secrets.token_urlsafe(32)
     _sessions[token] = data
     response.set_cookie(
-        "session", token, httponly=True, samesite="Lax", max_age=86400
+        "session", token, httponly=True, samesite="Lax", max_age=86400,
+        secure=secure,
     )
 
 
 # --------------------------------------------------------------------------- #
 # OAuth
 # --------------------------------------------------------------------------- #
-def _authorize_url() -> str:
+def _authorize_url(state: str) -> str:
     params = {
         "client_id": config.OAUTH_CLIENT_ID,
         "redirect_uri": config.OAUTH_REDIRECT_URI,
         "response_type": "code",
         "scope": "identify guilds",
+        "state": state,
     }
     return f"{DISCORD_API}/oauth2/authorize?{urlencode(params)}"
 
@@ -90,8 +98,15 @@ async def _fetch(access_token: str, path: str):
 def build_app(bot) -> web.Application:
     app = web.Application()
 
-    async def login(_request: web.Request) -> web.Response:
-        raise web.HTTPFound(_authorize_url())
+    async def login(request: web.Request) -> web.Response:
+        # Paramètre `state` anti-CSRF : posé en cookie, revérifié au callback.
+        state = secrets.token_urlsafe(24)
+        response = web.HTTPFound(_authorize_url(state))
+        response.set_cookie(
+            "oauth_state", state, httponly=True, samesite="Lax",
+            max_age=600, secure=_is_secure(request),
+        )
+        return response
 
     async def logout(request: web.Request) -> web.Response:
         token = request.cookies.get("session")
@@ -101,6 +116,14 @@ def build_app(bot) -> web.Application:
         return response
 
     async def callback(request: web.Request) -> web.Response:
+        # Vérifie le `state` OAuth (protection contre le login CSRF).
+        state = request.query.get("state")
+        expected = request.cookies.get("oauth_state")
+        if not state or not expected or not secrets.compare_digest(
+            state, expected
+        ):
+            return web.Response(text="État OAuth invalide.", status=400)
+
         code = request.query.get("code")
         if not code:
             raise web.HTTPFound("/")
@@ -141,7 +164,10 @@ def build_app(bot) -> web.Application:
              "guild_ids": guild_ids,
              # Langue mémorisée pour ce compte (persistée côté serveur).
              "lang": prefs.get_lang(user["id"])},
+            secure=_is_secure(request),
         )
+        # Le `state` a servi : on retire son cookie.
+        response.del_cookie("oauth_state")
         return response
 
     async def index(request: web.Request) -> web.Response:
@@ -466,6 +492,8 @@ function tsLabels(p){return p.map(x=>new Date(x.ts*1000).toLocaleString());}
 const NEON={cyan:'#00eaff',magenta:'#ff2bd6',purple:'#9d4bff',
  green:'#39ff14',yellow:'#f5ff3d'};
 Chart.defaults.color='#c8c8e6';Chart.defaults.borderColor='rgba(157,75,255,.15)';
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){
+ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 function card(html){const c=document.createElement('div');c.className='card';
  c.innerHTML=html;document.getElementById('content').appendChild(c);return c;}
 function chart(el,cfg){const c=new Chart(el,cfg);charts.push(c);return c;}
@@ -516,7 +544,7 @@ function aggregateUsage(){const m={};DATA.guilds.forEach(function(g){
 function renderAnalytics(sel){
  let opts='<option value="all">'+L.selAll+'</option>';
  DATA.guilds.forEach(function(g){opts+='<option value="'+g.id+'"'+
-   (sel===g.id?' selected':'')+'>'+g.name+'</option>';});
+   (sel===g.id?' selected':'')+'>'+esc(g.name)+'</option>';});
  const head=card('<h2>'+L.analytics+'</h2><div class="row">'+
    '<label>'+L.selServer+'</label><select id="srv">'+opts+'</select></div>');
  head.querySelector('#srv').onchange=function(e){
@@ -537,11 +565,11 @@ function renderAnalytics(sel){
  }else{
    const g=DATA.guilds.find(function(x){return x.id===sel;});
    if(!g){card('<p>'+L.noData+'</p>');return;}
-   card('<h2>'+L.membersEvo+' — '+g.name+'</h2><canvas id="gm"></canvas>');
+   card('<h2>'+L.membersEvo+' — '+esc(g.name)+'</h2><canvas id="gm"></canvas>');
    chart(document.getElementById('gm'),{type:'line',data:{labels:tsLabels(g.members),
      datasets:[{label:L.membersLbl,data:g.members.map(p=>p.count),borderColor:NEON.green,
        backgroundColor:'rgba(57,255,20,.1)',fill:true,tension:.25}]}});
-   card('<h2>'+L.cmdPerDay+' — '+g.name+'</h2><canvas id="gu"></canvas>');
+   card('<h2>'+L.cmdPerDay+' — '+esc(g.name)+'</h2><canvas id="gu"></canvas>');
    chart(document.getElementById('gu'),{type:'bar',data:{labels:g.usage.map(p=>p.date),
      datasets:[{label:L.cmdUsed,data:g.usage.map(p=>p.count),backgroundColor:NEON.purple}]}});
  }}
@@ -589,7 +617,7 @@ async function load(){
    // Vue administrateur : cartes par serveur qu'il administre.
    if(DATA.guilds.length===0){card('<p>'+L.noData+'</p>');return;}
    DATA.guilds.forEach(function(g,i){
-     card('<h2>'+g.name+'</h2><canvas id="m'+i+'"></canvas><canvas id="u'+i+'"></canvas>');
+     card('<h2>'+esc(g.name)+'</h2><canvas id="m'+i+'"></canvas><canvas id="u'+i+'"></canvas>');
      chart(document.getElementById('m'+i),{type:'line',data:{labels:tsLabels(g.members),
        datasets:[{label:L.membersLbl,data:g.members.map(p=>p.count),borderColor:NEON.green,
          backgroundColor:'rgba(57,255,20,.1)',fill:true,tension:.25}]}});
