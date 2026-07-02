@@ -43,6 +43,29 @@ _ORDER = [
     "cat.general", "cat.info", "cat.util", "cat.mod", "cat.owner_server",
 ]
 
+# Discord limite la valeur d'un champ d'embed à 1024 caractères.
+_FIELD_LIMIT = 1024
+
+
+def _chunk_lines(lines: list[str]) -> list[list[str]]:
+    """Regroupe des lignes en blocs dont le texte joint tient dans un champ."""
+    chunks: list[list[str]] = []
+    current: list[str] = []
+    length = 0
+    for line in lines:
+        # +1 pour le saut de ligne entre deux entrées.
+        extra = len(line) + (1 if current else 0)
+        if current and length + extra > _FIELD_LIMIT:
+            chunks.append(current)
+            current = []
+            length = 0
+            extra = len(line)
+        current.append(line)
+        length += extra
+    if current:
+        chunks.append(current)
+    return chunks
+
 
 class HelpView(discord.ui.View):
     """Vue de navigation entre les pages d'aide."""
@@ -176,9 +199,14 @@ class Help(commands.Cog):
                 description=t(ctx, "help.desc", prefix=config.PREFIX),
                 color=discord.Color.blurple(),
             )
-            embed.add_field(
-                name=category, value="\n".join(grouped[cat_key]), inline=False
-            )
+            # Discord limite la valeur d'un champ à 1024 caractères : on
+            # découpe les catégories chargées (ex. Modération) en plusieurs
+            # champs pour que la page reste affichable.
+            for chunk in _chunk_lines(grouped[cat_key]):
+                embed.add_field(
+                    name=category, value="\n".join(chunk), inline=False
+                )
+                category = "​"  # champs suivants : nom invisible.
             embed.set_footer(
                 text=t(ctx, "help.page", n=i + 1, total=len(page_keys),
                        count=total)

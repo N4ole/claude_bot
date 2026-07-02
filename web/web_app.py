@@ -301,10 +301,26 @@ _NEON_CSS = """
  .stat .n{font-size:1.8em;font-weight:800;color:var(--cyan);
    text-shadow:0 0 10px rgba(0,234,255,.6)}
  .stat .l{opacity:.7;font-size:.85em}
- #cookie-banner{position:fixed;left:0;right:0;bottom:0;display:none;gap:12px;
-   align-items:center;justify-content:space-between;flex-wrap:wrap;
-   background:#12121f;border-top:1px solid var(--purple);padding:12px 18px;
-   box-shadow:0 -6px 20px rgba(157,75,255,.25);z-index:99;font-size:.9em}
+ #cookie-banner{position:fixed;inset:0;display:none;z-index:999;
+   align-items:center;justify-content:center;
+   background:rgba(5,5,12,.82);backdrop-filter:blur(4px)}
+ #cookie-banner.show{display:flex}
+ #cookie-card{background:linear-gradient(160deg,#15152a,#0d0d1a);
+   border:2px solid var(--magenta);border-radius:18px;padding:34px;
+   max-width:460px;margin:20px;text-align:center;
+   box-shadow:0 0 40px rgba(255,43,214,.55),0 0 90px rgba(157,75,255,.4);
+   animation:cookiepop .3s ease}
+ @keyframes cookiepop{from{transform:scale(.9);opacity:0}
+   to{transform:scale(1);opacity:1}}
+ #cookie-card .ico{font-size:2.6em;line-height:1}
+ #cookie-card h2{margin:.4em 0 .3em}
+ #cookie-card p{opacity:.85;font-size:.95em;margin:0 0 22px}
+ #cookie-card .row{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+ .btn.decline{color:var(--magenta);border-color:var(--magenta);
+   box-shadow:0 0 12px rgba(255,43,214,.4)}
+ .btn.decline:hover{background:var(--magenta);color:#0a0a12;
+   box-shadow:0 0 22px var(--magenta)}
+ .gated{opacity:.35;pointer-events:none;filter:grayscale(.6)}
 """
 
 # Consentement cookies + gestion de la langue sur les pages publiques.
@@ -317,22 +333,38 @@ function startLang(){return getConsent()==='yes'?
 var _lang=startLang();
 function getLang(){return _lang;}
 function toggleLang(){applyLang(getLang()==='fr'?'en':'fr');}
+function setGate(on){document.querySelectorAll('.gate-consent').forEach(
+ function(e){if(on){e.classList.add('gated');e.setAttribute('aria-disabled','true');}
+ else{e.classList.remove('gated');e.removeAttribute('aria-disabled');}});}
 function cookieChoice(v){localStorage.setItem('cookieConsent',v);
  if(v==='no'){localStorage.removeItem('lang');}else{persistLang(_lang);}
- var bn=document.getElementById('cookie-banner');if(bn)bn.style.display='none';}
+ var bn=document.getElementById('cookie-banner');if(bn)bn.classList.remove('show');
+ setGate(false);}
 function initConsent(){if(getConsent()===null){
- var bn=document.getElementById('cookie-banner');if(bn)bn.style.display='flex';}}
+ var bn=document.getElementById('cookie-banner');if(bn)bn.classList.add('show');
+ setGate(true);}else{setGate(false);}}
+// Bloque toute action verrouillée tant que le choix n'est pas fait.
+document.addEventListener('click',function(ev){
+ var el=ev.target.closest?ev.target.closest('.gate-consent'):null;
+ if(el&&el.classList.contains('gated')){ev.preventDefault();ev.stopPropagation();}
+},true);
 """
 
-# Bannière de consentement (bilingue), masquée par défaut.
+# Modale de consentement (bilingue, bloquante), masquée par défaut.
 _COOKIE_BANNER = """
- <div id="cookie-banner" style="display:none">
-  <span>🍪 Ce site peut mémoriser votre langue dans votre navigateur.
-  / This site can store your language in your browser.</span>
-  <span style="white-space:nowrap">
-   <button class="btn" onclick="cookieChoice('yes')">Accepter / Accept</button>
-   <button class="btn" onclick="cookieChoice('no')">Refuser / Decline</button>
-  </span>
+ <div id="cookie-banner">
+  <div id="cookie-card">
+   <div class="ico">🍪</div>
+   <h2 data-fr="Cookies & confidentialité" data-en="Cookies & privacy"></h2>
+   <p data-fr="Ce site peut mémoriser votre langue dans votre navigateur. Choisissez avant de continuer : votre choix est nécessaire pour vous connecter."
+      data-en="This site can store your language in your browser. Please choose before continuing: your choice is required to log in."></p>
+   <div class="row">
+    <button class="btn" onclick="cookieChoice('yes')"
+     data-fr="Accepter" data-en="Accept"></button>
+    <button class="btn decline" onclick="cookieChoice('no')"
+     data-fr="Refuser" data-en="Decline"></button>
+   </div>
+  </div>
  </div>"""
 
 _LOGIN_HTML = """<!DOCTYPE html>
@@ -348,7 +380,7 @@ _LOGIN_HTML = """<!DOCTYPE html>
  <h1>▚ ClaudeBot ▞</h1>
  <p data-fr="Panneau d'administration. Connecte-toi avec Discord pour accéder aux statistiques et au contrôle du bot."
     data-en="Admin panel. Log in with Discord to access the bot's statistics and controls."></p>
- <a class="btn" href="/login" data-fr="Se connecter avec Discord"
+ <a class="btn gate-consent" href="/login" data-fr="Se connecter avec Discord"
     data-en="Log in with Discord"></a>
  <p style="margin-top:26px;font-size:.85em;opacity:.75">
    <a href="/privacy" data-fr="Politique de confidentialité"

@@ -7,8 +7,7 @@ et d'une invitation vers celui-ci.
 import discord
 from discord.ext import commands
 
-import config
-from utils import storage
+from utils import checks
 from utils.i18n import t
 
 
@@ -40,10 +39,7 @@ class ContactOwner(commands.Cog):
             return None
 
     def _bot_owner_ids(self) -> list[int]:
-        ids = list(storage.get_owners())
-        if config.OWNER_ID is not None and config.OWNER_ID not in ids:
-            ids.insert(0, config.OWNER_ID)
-        return ids
+        return checks.all_owner_ids()
 
     @commands.hybrid_command(
         name="contactowner",

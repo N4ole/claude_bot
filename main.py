@@ -4,6 +4,7 @@ import sys
 
 import config
 from bot import ClaudeBot
+from utils import logsetup
 from web import logbuffer
 
 
@@ -13,6 +14,8 @@ def setup_logging() -> None:
         format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
         datefmt="%H:%M:%S",
     )
+    # Journalisation fichier triée (bot.log / actions.log / errors.log).
+    logsetup.install()
     # Capture toute la sortie console pour la page « live » du panel web.
     logbuffer.install()
 

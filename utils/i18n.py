@@ -469,6 +469,38 @@ _CATALOG: dict[str, dict[str, str]] = {
         "fr": "❌ Impossible de contacter les owners du bot pour le moment.",
         "en": "❌ Unable to contact the bot owners at the moment.",
     },
+    # --- respond (owner -> propriétaires de serveurs) ---
+    "resp.dm_title": {"fr": "📬 Message des owners de ClaudeBot",
+                      "en": "📬 Message from the ClaudeBot owners"},
+    "resp.announce_title": {"fr": "📢 Annonce de ClaudeBot",
+                            "en": "📢 ClaudeBot announcement"},
+    "resp.from": {"fr": "Envoyé par", "en": "Sent by"},
+    "resp.usage": {
+        "fr": "Usage : `{prefix}respond <ID utilisateur | all> <message>`",
+        "en": "Usage: `{prefix}respond <user ID | all> <message>`",
+    },
+    "resp.bad_id": {
+        "fr": "❌ ID invalide. Indique un ID d'utilisateur (voir `{prefix}serveurs`) ou `all`.",
+        "en": "❌ Invalid ID. Provide a user ID (see `{prefix}serveurs`) or `all`.",
+    },
+    "resp.sent_one": {
+        "fr": "✅ Message envoyé à **{user}** (`{id}`).",
+        "en": "✅ Message sent to **{user}** (`{id}`).",
+    },
+    "resp.fail_one": {
+        "fr": "❌ Impossible d'envoyer un MP à `{id}` (introuvable ou MP fermés).",
+        "en": "❌ Could not DM `{id}` (not found or DMs closed).",
+    },
+    "resp.no_owners": {
+        "fr": "❌ Aucun propriétaire de serveur à contacter.",
+        "en": "❌ No server owner to contact.",
+    },
+    "resp.announced": {
+        "fr": "✅ Annonce envoyée à {sent} propriétaire(s) de serveur"
+              " ({failed} échec(s)).",
+        "en": "✅ Announcement sent to {sent} server owner(s)"
+              " ({failed} failure(s)).",
+    },
     # --- Mention (présentation) ---
     "mention.title": {"fr": "👋 Bonjour, je suis ClaudeBot !",
                       "en": "👋 Hi, I'm ClaudeBot!"},
