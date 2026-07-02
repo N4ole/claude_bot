@@ -23,6 +23,8 @@ _CATEGORIES = {
     # Modération
     "Watch": ("cat.mod", "perm.admin"),
     "Confine": ("cat.mod", "perm.admin"),
+    "Kick": ("cat.mod", "perm.kick"),
+    "Ban": ("cat.mod", "perm.ban"),
     "Mute": ("cat.mod", "perm.admin"),
     "Warn": ("cat.mod", "perm.admin"),
     "Clear": ("cat.mod", "perm.manage_messages"),

@@ -24,6 +24,7 @@ _CONFINE_PATH = _DATA / "confinements.json"
 _SETTINGS_PATH = _DATA / "guild_settings.json"
 _MODLOG_PATH = _DATA / "modlog.json"
 _REMINDERS_PATH = _DATA / "reminders.json"
+_TEMPBAN_PATH = _DATA / "tempbans.json"
 _lock = Lock()
 _owners_lock = Lock()
 _warns_lock = Lock()
@@ -31,6 +32,7 @@ _confine_lock = Lock()
 _reminders_lock = Lock()
 _settings_lock = Lock()
 _modlog_lock = Lock()
+_tempban_lock = Lock()
 
 
 def _read() -> dict:
@@ -237,6 +239,53 @@ def get_confinements() -> list[tuple[int, int, float]]:
     """Renvoie tous les confinements temporisés : (guild_id, user_id, ts)."""
     result = []
     for gid, users in _read_confinements().items():
+        for uid, ts in users.items():
+            result.append((int(gid), int(uid), float(ts)))
+    return result
+
+
+# --------------------------------------------------------------------------- #
+# Bans temporaires (tempbans.json = {guild_id: {user_id: release_ts}})
+# --------------------------------------------------------------------------- #
+def _read_tempbans() -> dict:
+    if not _TEMPBAN_PATH.exists():
+        return {}
+    try:
+        with _TEMPBAN_PATH.open("r", encoding="utf-8") as f:
+            return json.load(f)
+    except (json.JSONDecodeError, OSError):
+        return {}
+
+
+def _write_tempbans(data: dict) -> None:
+    with _TEMPBAN_PATH.open("w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2)
+
+
+def set_tempban(guild_id: int, user_id: int, release_ts: float) -> None:
+    """Enregistre l'échéance (timestamp UTC) de déban d'un ban temporaire."""
+    with _tempban_lock:
+        data = _read_tempbans()
+        data.setdefault(str(guild_id), {})[str(user_id)] = release_ts
+        _write_tempbans(data)
+
+
+def clear_tempban(guild_id: int, user_id: int) -> None:
+    """Retire l'entrée de ban temporaire d'un utilisateur."""
+    with _tempban_lock:
+        data = _read_tempbans()
+        guild = data.get(str(guild_id))
+        if guild and str(user_id) in guild:
+            del guild[str(user_id)]
+            if not guild:
+                del data[str(guild_id)]
+            _write_tempbans(data)
+
+
+def get_tempbans() -> list[tuple[int, int, float]]:
+    """Renvoie tous les bans temporaires : (guild_id, user_id, ts)."""
+    result = []
+    for gid, users in _read_tempbans().items():
         for uid, ts in users.items():
             result.append((int(gid), int(uid), float(ts)))
     return result

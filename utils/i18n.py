@@ -675,7 +675,14 @@ _CATALOG: dict[str, dict[str, str]] = {
     "perm.admin": {"fr": "Administrateur", "en": "Administrator"},
     "perm.manage_messages": {"fr": "Gérer les messages", "en": "Manage Messages"},
     "perm.server_owner": {"fr": "Propriétaire du serveur", "en": "Server owner"},
+    "perm.kick": {"fr": "Expulser des membres", "en": "Kick Members"},
+    "perm.ban": {"fr": "Bannir des membres", "en": "Ban Members"},
     # Descriptions traduites des commandes (utilisées par le help).
+    "cmddesc.kick": {"fr": "Expulse un utilisateur du serveur (avec raison).",
+                     "en": "Kick a user from the server (with reason)."},
+    "cmddesc.ban": {
+        "fr": "Bannit un utilisateur (raison et durée optionnelle).",
+        "en": "Ban a user (reason and optional duration)."},
     "cmddesc.8ball": {"fr": "Pose une question à la boule magique.",
                       "en": "Ask the magic 8-ball a question."},
     "cmddesc.analyse": {"fr": "Graphique d'activité du serveur sur 7 jours.",
@@ -760,6 +767,47 @@ _CATALOG: dict[str, dict[str, str]] = {
                       "en": "Watch a user and log their activity."},
     "cmddesc.watchlist": {"fr": "Liste les utilisateurs actuellement surveillés.",
                           "en": "List currently watched users."},
+    # --- Kick / Ban ---
+    "mod.no_reason": {"fr": "Aucune raison fournie.", "en": "No reason provided."},
+    "kick.done": {
+        "fr": "👢 **{user}** a été expulsé.\n**Raison :** {reason}",
+        "en": "👢 **{user}** has been kicked.\n**Reason:** {reason}"},
+    "kick.self": {"fr": "❌ Tu ne peux pas t'expulser toi-même.",
+                  "en": "❌ You can't kick yourself."},
+    "kick.hierarchy": {
+        "fr": "❌ Tu ne peux pas expulser un membre dont le rôle est égal ou "
+              "supérieur au tien.",
+        "en": "❌ You can't kick a member whose role is equal to or higher "
+              "than yours."},
+    "kick.forbidden": {
+        "fr": "❌ Je n'ai pas la permission d'expulser cet utilisateur "
+              "(rôle trop haut ?).",
+        "en": "❌ I don't have permission to kick this user (role too high?)."},
+    "kick.failed": {"fr": "❌ Échec de l'expulsion : {error}",
+                    "en": "❌ Kick failed: {error}"},
+    "ban.title": {"fr": "🔨 Bannissement", "en": "🔨 Ban"},
+    "ban.perm_desc": {
+        "fr": "**{user}** a été banni **définitivement**.\n**Raison :** {reason}",
+        "en": "**{user}** has been banned **permanently**.\n"
+              "**Reason:** {reason}"},
+    "ban.temp_desc": {
+        "fr": "**{user}** a été banni.\n**Raison :** {reason}",
+        "en": "**{user}** has been banned.\n**Reason:** {reason}"},
+    "ban.until": {"fr": "Déban le", "en": "Unban on"},
+    "ban.relative": {"fr": "Dans", "en": "In"},
+    "ban.self": {"fr": "❌ Tu ne peux pas te bannir toi-même.",
+                 "en": "❌ You can't ban yourself."},
+    "ban.hierarchy": {
+        "fr": "❌ Tu ne peux pas bannir un membre dont le rôle est égal ou "
+              "supérieur au tien.",
+        "en": "❌ You can't ban a member whose role is equal to or higher "
+              "than yours."},
+    "ban.forbidden": {
+        "fr": "❌ Je n'ai pas la permission de bannir cet utilisateur "
+              "(rôle trop haut ?).",
+        "en": "❌ I don't have permission to ban this user (role too high?)."},
+    "ban.failed": {"fr": "❌ Échec du bannissement : {error}",
+                   "en": "❌ Ban failed: {error}"},
     # --- Servers (détail owner) ---
     "srv.title": {"fr": "🌐 Serveurs du bot ({count})",
                   "en": "🌐 Bot servers ({count})"},
