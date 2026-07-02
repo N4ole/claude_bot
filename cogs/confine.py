@@ -13,6 +13,7 @@ import discord
 from discord.ext import commands
 
 from utils import storage
+from utils.i18n import t
 
 log = logging.getLogger(__name__)
 
@@ -137,10 +138,7 @@ class Confine(commands.Cog):
             overwrites=overwrites,
             topic=f"Confinement de {member} (id: {member.id})",
         )
-        await channel.send(
-            f"🔒 {member.mention} tu es confiné. Seuls les administrateurs "
-            "peuvent te voir ici."
-        )
+        await channel.send(t(guild, "confine.notice", user=member.mention))
         return channel
 
     async def remove_confinement(
@@ -187,11 +185,11 @@ class Confine(commands.Cog):
     async def confine(self, ctx: commands.Context, member: discord.Member) -> None:
         channel = await self.apply_confinement(ctx.guild, member)
         if channel is None:
-            await ctx.send(f"⚠️ {member.mention} est déjà confiné.")
+            await ctx.send(t(ctx, "confine.already", user=member.mention))
             return
         storage.add_modlog(ctx.guild.id, member.id, "confine", ctx.author.id)
         await ctx.send(
-            f"🔒 {member.mention} a été confiné dans {channel.mention}."
+            t(ctx, "confine.done", user=member.mention, channel=channel.mention)
         )
 
     @commands.hybrid_command(
@@ -202,7 +200,7 @@ class Confine(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def unconfine(self, ctx: commands.Context, member: discord.Member) -> None:
         await self.remove_confinement(ctx.guild, member)
-        await ctx.send(f"🔓 {member.mention} a été libéré du confinement.")
+        await ctx.send(t(ctx, "unconfine.done", user=member.mention))
 
 
 async def setup(bot: commands.Bot) -> None:

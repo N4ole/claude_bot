@@ -5,12 +5,13 @@ import discord
 from discord.ext import commands
 
 from utils import storage
+from utils.i18n import t
 
-_LABELS = {
-    "warn": "⚠️ Avertissements",
-    "mute": "🔇 Mutes",
-    "unmute": "🔊 Unmutes",
-    "confine": "🔒 Confinements",
+_LABEL_KEYS = {
+    "warn": "us.warns_label",
+    "mute": "us.mute_label",
+    "unmute": "us.unmute_label",
+    "confine": "us.confine_label",
 }
 
 
@@ -34,6 +35,10 @@ class UserStatus(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
+    def _label(self, ctx, action_type: str) -> str:
+        key = _LABEL_KEYS.get(action_type)
+        return t(ctx, key) if key else action_type
+
     @commands.hybrid_command(
         name="userstatus",
         description="Affiche l'historique des sanctions d'un utilisateur.",
@@ -46,19 +51,19 @@ class UserStatus(commands.Cog):
         actions = storage.get_modlog(ctx.guild.id, member.id)
 
         embed = discord.Embed(
-            title=f"📋 Dossier de {member}",
+            title=t(ctx, "us.title", user=member),
             color=discord.Color.orange(),
         )
         embed.set_thumbnail(url=member.display_avatar.url)
 
         # État actuel.
         warns = storage.get_warns(ctx.guild.id, member.id)
-        etats = [f"Avertissements actuels : **{warns}/5**"]
+        etats = [t(ctx, "us.warns_now", count=warns)]
         if member.timed_out_until is not None and (
             member.timed_out_until > datetime.now(timezone.utc)
         ):
             etats.append(
-                "🔇 Actuellement mute jusqu'à "
+                t(ctx, "us.muted_until")
                 + discord.utils.format_dt(member.timed_out_until, style="R")
             )
         confined = any(
@@ -67,45 +72,53 @@ class UserStatus(commands.Cog):
             if gid == ctx.guild.id
         )
         if confined:
-            etats.append("🔒 Actuellement confiné")
-        embed.add_field(name="État actuel", value="\n".join(etats), inline=False)
+            etats.append(t(ctx, "us.confined_now"))
+        embed.add_field(
+            name=t(ctx, "us.current"), value="\n".join(etats), inline=False
+        )
 
         # Compteurs par type + durée totale de mute.
         counts: dict[str, int] = {}
         total_mute = 0.0
-        for a in actions:
-            counts[a["type"]] = counts.get(a["type"], 0) + 1
-            if a["type"] == "mute" and a.get("duration"):
-                total_mute += a["duration"]
+        for action in actions:
+            counts[action["type"]] = counts.get(action["type"], 0) + 1
+            if action["type"] == "mute" and action.get("duration"):
+                total_mute += action["duration"]
 
         if counts:
             summary = "\n".join(
-                f"{_LABELS.get(t, t)} : **{n}**"
-                for t, n in sorted(counts.items())
+                f"{self._label(ctx, typ)} : **{n}**"
+                for typ, n in sorted(counts.items())
             )
             if total_mute:
-                summary += f"\n⏱️ Temps de mute cumulé : **{_fmt_duration(total_mute)}**"
-            embed.add_field(name="Total", value=summary, inline=False)
+                summary += "\n" + t(ctx, "us.mute_time",
+                                    duration=_fmt_duration(total_mute))
+            embed.add_field(name=t(ctx, "us.total"), value=summary, inline=False)
         else:
             embed.add_field(
-                name="Total", value="Aucune sanction enregistrée.", inline=False
+                name=t(ctx, "us.total"), value=t(ctx, "us.no_sanction"),
+                inline=False,
             )
 
         # Détail des dernières actions (10 max).
         if actions:
             lines = []
-            for a in actions[-10:]:
+            for action in actions[-10:]:
                 ts = discord.utils.format_dt(
-                    datetime.fromtimestamp(a["ts"], tz=timezone.utc), style="f"
+                    datetime.fromtimestamp(action["ts"], tz=timezone.utc),
+                    style="f",
                 )
-                label = _LABELS.get(a["type"], a["type"]).split(" ", 1)[-1]
-                extra = f" — {a['detail']}" if a.get("detail") else ""
-                if a.get("duration"):
-                    extra += f" ({_fmt_duration(a['duration'])})"
-                mod = f" par <@{a['moderator']}>" if a.get("moderator") else ""
+                label = self._label(ctx, action["type"]).split(" ", 1)[-1]
+                extra = f" — {action['detail']}" if action.get("detail") else ""
+                if action.get("duration"):
+                    extra += f" ({_fmt_duration(action['duration'])})"
+                mod = (
+                    f" {t(ctx, 'us.by')} <@{action['moderator']}>"
+                    if action.get("moderator") else ""
+                )
                 lines.append(f"• {ts} — {label}{extra}{mod}")
             embed.add_field(
-                name="Dernières actions", value="\n".join(lines), inline=False
+                name=t(ctx, "us.recent"), value="\n".join(lines), inline=False
             )
 
         await ctx.send(embed=embed)

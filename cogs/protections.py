@@ -3,14 +3,15 @@ import discord
 from discord.ext import commands
 
 from utils import storage
+from utils.i18n import t
 
-# Protections activables via commande (clé de réglage -> libellé).
+# Protections activables via commande (clé de réglage -> clé de libellé i18n).
 _TOGGLES = {
-    "antibot": "🤖 Anti-bot",
-    "antiraid": "🛡️ Anti-raid (captcha)",
-    "antipub": "🚫 Anti-pub (invitations)",
-    "antispam": "⏱️ Anti-spam",
-    "antiinsulte": "🤬 Anti-insulte",
+    "antibot": "prot.antibot",
+    "antiraid": "prot.antiraid",
+    "antipub": "prot.antipub",
+    "antispam": "prot.antispam",
+    "antiinsulte": "prot.antiinsulte",
 }
 
 
@@ -28,31 +29,25 @@ class Protections(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def protections(self, ctx: commands.Context) -> None:
         embed = discord.Embed(
-            title="🛡️ Protections du serveur",
+            title=t(ctx, "prot.title"),
             color=discord.Color.blurple(),
         )
 
         lines = []
-        for key, label in _TOGGLES.items():
+        for key, label_key in _TOGGLES.items():
             active = storage.get_setting(ctx.guild.id, key, False)
-            state = "🟢 Activé" if active else "🔴 Désactivé"
-            lines.append(f"{label} : **{state}**")
+            state = t(ctx, "prot.on") if active else t(ctx, "prot.off")
+            lines.append(f"{t(ctx, label_key)} : **{state}**")
         embed.add_field(
-            name="Activables", value="\n".join(lines), inline=False
+            name=t(ctx, "prot.toggleable"), value="\n".join(lines), inline=False
         )
 
-        # Automodération toujours active.
         embed.add_field(
-            name="Toujours actives",
-            value=(
-                "🔠 Anti-majuscules : **🟢**\n"
-                "😀 Anti-emojis : **🟢**"
-            ),
+            name=t(ctx, "prot.always"),
+            value=t(ctx, "prot.always_val"),
             inline=False,
         )
-        embed.set_footer(
-            text="Active/désactive : antibot, antiraid, antipub, antispam <on/off>"
-        )
+        embed.set_footer(text=t(ctx, "prot.footer"))
         await ctx.send(embed=embed)
 
 

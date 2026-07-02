@@ -14,6 +14,7 @@ import discord
 from discord.ext import commands
 
 from utils import storage
+from utils.i18n import t
 
 log = logging.getLogger(__name__)
 
@@ -84,7 +85,7 @@ class Warn(commands.Cog):
     ) -> str:
         """Applique la sanction du niveau et renvoie sa description."""
         if level == 1:
-            return "simple avertissement"
+            return t(ctx, "warn.s1")
 
         if level == 2:
             try:
@@ -93,14 +94,14 @@ class Warn(commands.Cog):
                 )
             except discord.HTTPException:
                 pass
-            return "mute (timeout) de 5 minutes"
+            return t(ctx, "warn.s2")
 
         if level == 3:
             try:
                 await member.timeout(timedelta(hours=1), reason="Warn 3")
             except discord.HTTPException:
                 pass
-            return "mute (timeout) d'une heure"
+            return t(ctx, "warn.s3")
 
         if level == 4:
             confine_cog = self.bot.get_cog("Confine")
@@ -109,14 +110,14 @@ class Warn(commands.Cog):
                 # et reprise automatiquement après un redémarrage du bot.
                 until = datetime.now(timezone.utc) + CONFINE_DURATION
                 await confine_cog.apply_temp_confinement(ctx.guild, member, until)
-            return "confinement pendant une semaine"
+            return t(ctx, "warn.s4")
 
         # Niveau >= MAX_WARN : bannissement.
         try:
             await member.ban(reason="Warn 5 — bannissement permanent")
         except discord.HTTPException:
-            return "bannissement (échec — vérifiez les permissions)"
-        return "bannissement permanent"
+            return t(ctx, "warn.s5_fail")
+        return t(ctx, "warn.s5")
 
     # ------------------------------------------------------------------ #
     # Commandes
@@ -137,11 +138,12 @@ class Warn(commands.Cog):
         )
 
         embed = discord.Embed(
-            title="⚠️ Avertissement",
-            description=f"{member.mention} — **warn {level}/{MAX_WARN}**",
+            title=t(ctx, "warn.title"),
+            description=t(ctx, "warn.desc", user=member.mention,
+                          level=level, max=MAX_WARN),
             color=discord.Color.red(),
         )
-        embed.add_field(name="Sanction", value=sanction, inline=False)
+        embed.add_field(name=t(ctx, "warn.field"), value=sanction, inline=False)
         await ctx.send(embed=embed)
 
     @commands.hybrid_command(
@@ -153,7 +155,7 @@ class Warn(commands.Cog):
     async def unwarn(self, ctx: commands.Context, member: discord.Member) -> None:
         current = storage.get_warns(ctx.guild.id, member.id)
         if current <= 0:
-            await ctx.send(f"{member.mention} n'a aucun avertissement.")
+            await ctx.send(t(ctx, "unwarn.none", user=member.mention))
             return
 
         new_level = current - 1
@@ -170,7 +172,8 @@ class Warn(commands.Cog):
             await confine_cog.remove_confinement(ctx.guild, member)
 
         await ctx.send(
-            f"✅ {member.mention} passe à **warn {new_level}/{MAX_WARN}**."
+            t(ctx, "unwarn.done", user=member.mention,
+              level=new_level, max=MAX_WARN)
         )
 
     @commands.hybrid_command(
@@ -182,7 +185,7 @@ class Warn(commands.Cog):
     async def warns(self, ctx: commands.Context, member: discord.Member) -> None:
         count = storage.get_warns(ctx.guild.id, member.id)
         await ctx.send(
-            f"{member.mention} a **{count}/{MAX_WARN}** avertissement(s)."
+            t(ctx, "warns.count", user=member.mention, count=count, max=MAX_WARN)
         )
 
 

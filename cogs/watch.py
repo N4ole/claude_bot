@@ -13,6 +13,7 @@ import discord
 from discord.ext import commands
 
 from utils import storage
+from utils.i18n import t
 
 CATEGORY_NAME = "WATCHED USER"
 
@@ -64,7 +65,7 @@ class Watch(commands.Cog):
         guild = ctx.guild
 
         if storage.get_channel_id(guild.id, member.id) is not None:
-            await ctx.send(f"⚠️ {member.mention} est déjà surveillé.")
+            await ctx.send(t(ctx, "watch.already", user=member.mention))
             return
 
         # Récupère (ou crée) la catégorie « WATCHED USER ».
@@ -86,7 +87,7 @@ class Watch(commands.Cog):
 
         storage.add_watch(guild.id, member.id, channel.id)
         await ctx.send(
-            f"👁️ Surveillance de {member.mention} activée dans {channel.mention}."
+            t(ctx, "watch.done", user=member.mention, channel=channel.mention)
         )
 
     @commands.hybrid_command(
@@ -97,15 +98,12 @@ class Watch(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def unwatch(self, ctx: commands.Context, member: discord.Member) -> None:
         if storage.get_channel_id(ctx.guild.id, member.id) is None:
-            await ctx.send(f"⚠️ {member.mention} n'est pas surveillé.")
+            await ctx.send(t(ctx, "unwatch.not", user=member.mention))
             return
 
         storage.remove_watch(ctx.guild.id, member.id)
         self._voice_since.pop((ctx.guild.id, member.id), None)
-        await ctx.send(
-            f"✅ Surveillance de {member.mention} arrêtée. "
-            "(Le salon de log n'est pas supprimé.)"
-        )
+        await ctx.send(t(ctx, "unwatch.done", user=member.mention))
 
     @commands.hybrid_command(
         name="watchlist",
@@ -116,17 +114,20 @@ class Watch(commands.Cog):
     async def watchlist(self, ctx: commands.Context) -> None:
         watches = storage.get_guild_watches(ctx.guild.id)
         if not watches:
-            await ctx.send("Aucun utilisateur n'est surveillé sur ce serveur.")
+            await ctx.send(t(ctx, "watchlist.empty"))
             return
 
         lines = []
         for user_id, channel_id in watches.items():
             channel = ctx.guild.get_channel(channel_id)
-            target = channel.mention if channel else f"#{channel_id} (supprimé)"
+            target = (
+                channel.mention if channel
+                else t(ctx, "watch.deleted", id=channel_id)
+            )
             lines.append(f"• <@{user_id}> → {target}")
 
         embed = discord.Embed(
-            title="👁️ Utilisateurs surveillés",
+            title=t(ctx, "watchlist.title"),
             description="\n".join(lines),
             color=discord.Color.dark_red(),
         )
@@ -143,22 +144,25 @@ class Watch(commands.Cog):
         if channel is None or channel.id == message.channel.id:
             return
 
+        g = message.guild
         embed = discord.Embed(
-            description=message.content or "*(aucun texte)*",
+            description=message.content or t(g, "watch.no_text"),
             color=discord.Color.blue(),
             timestamp=message.created_at,
         )
         embed.set_author(
-            name=f"{message.author} — message envoyé",
+            name=t(g, "watch.msg_sent", user=message.author),
             icon_url=message.author.display_avatar.url,
         )
-        embed.add_field(name="Salon", value=message.channel.mention, inline=True)
+        embed.add_field(name=t(g, "watch.channel"),
+                        value=message.channel.mention, inline=True)
         embed.add_field(
-            name="Lien", value=f"[aller au message]({message.jump_url})", inline=True
+            name=t(g, "watch.link"),
+            value=f"[{t(g, 'watch.goto')}]({message.jump_url})", inline=True,
         )
         if message.attachments:
             embed.add_field(
-                name="Pièces jointes",
+                name=t(g, "watch.attachments"),
                 value="\n".join(a.url for a in message.attachments),
                 inline=False,
             )
@@ -176,23 +180,26 @@ class Watch(commands.Cog):
         if channel is None or channel.id == after.channel.id:
             return
 
+        g = after.guild
         embed = discord.Embed(
             color=discord.Color.orange(),
             timestamp=datetime.now(timezone.utc),
         )
         embed.set_author(
-            name=f"{after.author} — message modifié",
+            name=t(g, "watch.msg_edit", user=after.author),
             icon_url=after.author.display_avatar.url,
         )
+        embed.add_field(name=t(g, "watch.before"),
+                        value=before.content or t(g, "watch.no_text"),
+                        inline=False)
+        embed.add_field(name=t(g, "watch.after"),
+                        value=after.content or t(g, "watch.no_text"),
+                        inline=False)
+        embed.add_field(name=t(g, "watch.channel"),
+                        value=after.channel.mention, inline=True)
         embed.add_field(
-            name="Avant", value=before.content or "*(aucun texte)*", inline=False
-        )
-        embed.add_field(
-            name="Après", value=after.content or "*(aucun texte)*", inline=False
-        )
-        embed.add_field(name="Salon", value=after.channel.mention, inline=True)
-        embed.add_field(
-            name="Lien", value=f"[aller au message]({after.jump_url})", inline=True
+            name=t(g, "watch.link"),
+            value=f"[{t(g, 'watch.goto')}]({after.jump_url})", inline=True,
         )
         await channel.send(embed=embed)
 
@@ -204,19 +211,21 @@ class Watch(commands.Cog):
         if channel is None or channel.id == message.channel.id:
             return
 
+        g = message.guild
         embed = discord.Embed(
-            description=message.content or "*(aucun texte)*",
+            description=message.content or t(g, "watch.no_text"),
             color=discord.Color.red(),
             timestamp=datetime.now(timezone.utc),
         )
         embed.set_author(
-            name=f"{message.author} — message supprimé",
+            name=t(g, "watch.msg_del", user=message.author),
             icon_url=message.author.display_avatar.url,
         )
-        embed.add_field(name="Salon", value=message.channel.mention, inline=True)
+        embed.add_field(name=t(g, "watch.channel"),
+                        value=message.channel.mention, inline=True)
         if message.attachments:
             embed.add_field(
-                name="Pièces jointes",
+                name=t(g, "watch.attachments"),
                 value="\n".join(a.url for a in message.attachments),
                 inline=False,
             )
@@ -238,40 +247,38 @@ class Watch(commands.Cog):
         key = (member.guild.id, member.id)
         now = datetime.now(timezone.utc)
 
+        g = member.guild
         # Connexion à un salon vocal.
         if before.channel is None and after.channel is not None:
             self._voice_since[key] = now
             embed = discord.Embed(
-                description=f"🔊 A rejoint **{after.channel.name}**",
+                description=t(g, "watch.voice_join", channel=after.channel.name),
                 color=discord.Color.green(),
                 timestamp=now,
             )
-            embed.set_author(
-                name=f"{member} — vocal",
-                icon_url=member.display_avatar.url,
-            )
+            embed.set_author(name=t(g, "watch.voice", user=member),
+                             icon_url=member.display_avatar.url)
             await channel.send(embed=embed)
 
         # Déconnexion d'un salon vocal.
         elif before.channel is not None and after.channel is None:
             since = self._voice_since.pop(key, None)
             embed = discord.Embed(
-                description=f"🔇 A quitté **{before.channel.name}**",
+                description=t(g, "watch.voice_leave",
+                              channel=before.channel.name),
                 color=discord.Color.dark_grey(),
                 timestamp=now,
             )
-            embed.set_author(
-                name=f"{member} — vocal",
-                icon_url=member.display_avatar.url,
-            )
+            embed.set_author(name=t(g, "watch.voice", user=member),
+                             icon_url=member.display_avatar.url)
             embed.add_field(
-                name="Heure de sortie",
+                name=t(g, "watch.leave_time"),
                 value=discord.utils.format_dt(now, style="T"),
                 inline=True,
             )
             if since is not None:
                 embed.add_field(
-                    name="Durée de présence",
+                    name=t(g, "watch.duration"),
                     value=_fmt_duration(now - since),
                     inline=True,
                 )
@@ -284,17 +291,14 @@ class Watch(commands.Cog):
             and before.channel.id != after.channel.id
         ):
             embed = discord.Embed(
-                description=(
-                    f"↔️ Est passé de **{before.channel.name}** "
-                    f"à **{after.channel.name}**"
-                ),
+                description=t(g, "watch.voice_move",
+                              before=before.channel.name,
+                              after=after.channel.name),
                 color=discord.Color.blurple(),
                 timestamp=now,
             )
-            embed.set_author(
-                name=f"{member} — vocal",
-                icon_url=member.display_avatar.url,
-            )
+            embed.set_author(name=t(g, "watch.voice", user=member),
+                             icon_url=member.display_avatar.url)
             await channel.send(embed=embed)
 
     # --- Réactions ------------------------------------------------------- #
@@ -318,15 +322,17 @@ class Watch(commands.Cog):
             f"/{payload.channel_id}/{payload.message_id}"
         )
 
-        verb = "ajoutée" if added else "retirée"
+        desc_key = "watch.reaction_added" if added else "watch.reaction_removed"
+        auth_key = "watch.reaction_add" if added else "watch.reaction_del"
         embed = discord.Embed(
-            description=f"Réaction {verb} : {payload.emoji}",
+            description=t(guild, desc_key, emoji=payload.emoji),
             color=discord.Color.teal() if added else discord.Color.dark_teal(),
             timestamp=datetime.now(timezone.utc),
         )
-        embed.set_author(name=f"{name} — réaction {verb}", icon_url=icon)
+        embed.set_author(name=t(guild, auth_key, user=name), icon_url=icon)
         embed.add_field(
-            name="Message", value=f"[aller au message]({jump})", inline=True
+            name=t(guild, "watch.message"),
+            value=f"[{t(guild, 'watch.goto')}]({jump})", inline=True,
         )
         await channel.send(embed=embed)
 
@@ -353,20 +359,17 @@ class Watch(commands.Cog):
         if channel is None:
             return
 
+        g = after.guild
         embed = discord.Embed(
             color=discord.Color.purple(),
             timestamp=datetime.now(timezone.utc),
         )
-        embed.set_author(
-            name=f"{after} — pseudo modifié",
-            icon_url=after.display_avatar.url,
-        )
-        embed.add_field(
-            name="Avant", value=before.nick or "*(aucun)*", inline=True
-        )
-        embed.add_field(
-            name="Après", value=after.nick or "*(aucun)*", inline=True
-        )
+        embed.set_author(name=t(g, "watch.nick", user=after),
+                         icon_url=after.display_avatar.url)
+        embed.add_field(name=t(g, "watch.before"),
+                        value=before.nick or t(g, "watch.none"), inline=True)
+        embed.add_field(name=t(g, "watch.after"),
+                        value=after.nick or t(g, "watch.none"), inline=True)
         await channel.send(embed=embed)
 
     # --- Statut ---------------------------------------------------------- #
@@ -380,15 +383,15 @@ class Watch(commands.Cog):
         if channel is None:
             return
 
+        g = after.guild
         embed = discord.Embed(
-            description=f"Statut : **{before.status}** → **{after.status}**",
+            description=t(g, "watch.status_desc",
+                          before=before.status, after=after.status),
             color=discord.Color.greyple(),
             timestamp=datetime.now(timezone.utc),
         )
-        embed.set_author(
-            name=f"{after} — statut modifié",
-            icon_url=after.display_avatar.url,
-        )
+        embed.set_author(name=t(g, "watch.status", user=after),
+                         icon_url=after.display_avatar.url)
         await channel.send(embed=embed)
 
 
