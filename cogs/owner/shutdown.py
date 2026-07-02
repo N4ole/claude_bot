@@ -11,7 +11,7 @@ class Shutdown(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
-    @commands.hybrid_command(
+    @commands.command(
         name="shutdown",
         description="Éteint le bot.",
     )
