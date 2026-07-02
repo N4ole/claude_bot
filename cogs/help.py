@@ -3,47 +3,10 @@ import discord
 from discord.ext import commands
 
 import config
+from utils import categories
 from utils.i18n import t
 
-# Catégorie (clé i18n) et permission (clé i18n ou None), par nom de cog.
-_CATEGORIES = {
-    # Infos
-    "UserInfo": ("cat.info", None),
-    "Avatar": ("cat.info", None),
-    "ServerInfo": ("cat.info", None),
-    "BotInfo": ("cat.info", None),
-    "MemberCount": ("cat.info", None),
-    # Utilitaire
-    "Poll": ("cat.util", None),
-    "Roll": ("cat.util", None),
-    "CoinFlip": ("cat.util", None),
-    "EightBall": ("cat.util", None),
-    "Choose": ("cat.util", None),
-    "RemindMe": ("cat.util", None),
-    # Modération
-    "Watch": ("cat.mod", "perm.admin"),
-    "Confine": ("cat.mod", "perm.admin"),
-    "Kick": ("cat.mod", "perm.kick"),
-    "Ban": ("cat.mod", "perm.ban"),
-    "Mute": ("cat.mod", "perm.admin"),
-    "Warn": ("cat.mod", "perm.admin"),
-    "Clear": ("cat.mod", "perm.manage_messages"),
-    "AntiBot": ("cat.mod", "perm.admin"),
-    "AntiRaid": ("cat.mod", "perm.admin"),
-    "AntiPub": ("cat.mod", "perm.admin"),
-    "AntiSpam": ("cat.mod", "perm.admin"),
-    "AntiInsulte": ("cat.mod", "perm.admin"),
-    "Protections": ("cat.mod", "perm.admin"),
-    "UserStatus": ("cat.mod", "perm.admin"),
-    "Analyse": ("cat.mod", "perm.admin"),
-    "Langue": ("cat.mod", "perm.admin"),
-    # Propriétaire de serveur
-    "ContactOwner": ("cat.owner_server", "perm.server_owner"),
-}
-_DEFAULT = ("cat.general", None)
-_ORDER = [
-    "cat.general", "cat.info", "cat.util", "cat.mod", "cat.owner_server",
-]
+_ORDER = categories.ORDER
 
 # Discord limite la valeur d'un champ d'embed à 1024 caractères.
 _FIELD_LIMIT = 1024
@@ -129,8 +92,7 @@ class Help(commands.Cog):
         self.bot = bot
 
     def _category_of(self, command: commands.Command) -> tuple[str, str | None]:
-        cog_name = command.cog.qualified_name if command.cog else ""
-        return _CATEGORIES.get(cog_name, _DEFAULT)
+        return categories.category_of(command)
 
     def _describe(self, ctx, command: commands.Command) -> str:
         """Description traduite de la commande, avec repli sur le décorateur."""

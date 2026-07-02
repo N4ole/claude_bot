@@ -767,6 +767,37 @@ _CATALOG: dict[str, dict[str, str]] = {
                       "en": "Watch a user and log their activity."},
     "cmddesc.watchlist": {"fr": "Liste les utilisateurs actuellement surveillés.",
                           "en": "List currently watched users."},
+    "cmddesc.logs": {
+        "fr": "Active/désactive les logs Discord par type (on/off <type>).",
+        "en": "Enable/disable Discord logs by type (on/off <type>)."},
+    # --- Logs Discord ---
+    "logs.usage": {
+        "fr": "Usage : `{prefix}logs <on|off> <type>`\nTypes : {types}.",
+        "en": "Usage: `{prefix}logs <on|off> <type>`\nTypes: {types}."},
+    "logs.bad_type": {
+        "fr": "❌ Type inconnu. Types disponibles : {types}.",
+        "en": "❌ Unknown type. Available types: {types}."},
+    "logs.on": {
+        "fr": "✅ Logs **{type}** activés dans {channel}.",
+        "en": "✅ **{type}** logs enabled in {channel}."},
+    "logs.on_all": {
+        "fr": "✅ Tous les types de logs ont été activés (catégorie **logs**).",
+        "en": "✅ All log types have been enabled (**logs** category)."},
+    "logs.off": {"fr": "✅ Logs **{type}** désactivés.",
+                 "en": "✅ **{type}** logs disabled."},
+    "logs.off_all": {"fr": "✅ Tous les logs ont été désactivés.",
+                     "en": "✅ All logs have been disabled."},
+    "logs.already_off": {"fr": "ℹ️ Les logs **{type}** ne sont pas activés.",
+                         "en": "ℹ️ **{type}** logs are not enabled."},
+    "logs.entry_cmd": {"fr": "📋 Commande `{prefix}{cmd}`",
+                       "en": "📋 Command `{prefix}{cmd}`"},
+    "logs.entry_error": {"fr": "⚠️ Échec `{prefix}{cmd}`",
+                         "en": "⚠️ Failed `{prefix}{cmd}`"},
+    "logs.f_user": {"fr": "Utilisateur", "en": "User"},
+    "logs.f_channel": {"fr": "Salon", "en": "Channel"},
+    "logs.f_via": {"fr": "Via", "en": "Via"},
+    "logs.f_args": {"fr": "Arguments", "en": "Arguments"},
+    "logs.f_error": {"fr": "Erreur", "en": "Error"},
     # --- Kick / Ban ---
     "mod.no_reason": {"fr": "Aucune raison fournie.", "en": "No reason provided."},
     "mod.reason_label": {"fr": "Raison", "en": "Reason"},
