@@ -16,6 +16,7 @@ from aiohttp import web
 
 from utils import checks
 import config
+from web import prefs
 from web import stats
 
 DISCORD_API = "https://discord.com/api"
@@ -136,7 +137,9 @@ def build_app(bot) -> web.Application:
         _set_session(
             response,
             {"user": {"id": user["id"], "username": user.get("username")},
-             "guild_ids": guild_ids},
+             "guild_ids": guild_ids,
+             # Langue mémorisée pour ce compte (persistée côté serveur).
+             "lang": prefs.get_lang(user["id"])},
         )
         return response
 
@@ -169,6 +172,7 @@ def build_app(bot) -> web.Application:
             "is_owner": is_owner,
             "user": session["user"],
             "guilds": guilds_data,
+            "lang": session.get("lang", "fr"),
         }
         if is_owner:
             payload["servers_history"] = stats.get_snapshots()
@@ -219,6 +223,19 @@ def build_app(bot) -> web.Application:
                 failed += 1
         return web.json_response({"ok": True, "reloaded": reloaded, "failed": failed})
 
+    async def set_lang(request: web.Request) -> web.Response:
+        # Enregistre la langue pour le compte connecté (persistée côté serveur).
+        session = _get_session(request)
+        if session is None:
+            return web.json_response({"error": "unauthorized"}, status=401)
+        body = await request.json()
+        lang = (body.get("lang") or "").lower()
+        if lang not in prefs.LANGS:
+            return web.json_response({"error": "invalid"}, status=400)
+        prefs.set_lang(session["user"]["id"], lang)
+        session["lang"] = lang
+        return web.json_response({"ok": True, "lang": lang})
+
     async def privacy(_request: web.Request) -> web.Response:
         return web.Response(text=_PRIVACY_HTML, content_type="text/html")
 
@@ -232,6 +249,7 @@ def build_app(bot) -> web.Application:
     app.router.add_get("/api/stats", api_stats)
     app.router.add_post("/api/control/presence", control_presence)
     app.router.add_post("/api/control/reload", control_reload)
+    app.router.add_post("/api/lang", set_lang)
     # Pages publiques (accessibles sans connexion).
     app.router.add_get("/privacy", privacy)
     app.router.add_get("/confidentialite", privacy)
@@ -271,18 +289,39 @@ _NEON_CSS = """
  .stat .n{font-size:1.8em;font-weight:800;color:var(--cyan);
    text-shadow:0 0 10px rgba(0,234,255,.6)}
  .stat .l{opacity:.7;font-size:.85em}
+ #cookie-banner{position:fixed;left:0;right:0;bottom:0;display:none;gap:12px;
+   align-items:center;justify-content:space-between;flex-wrap:wrap;
+   background:#12121f;border-top:1px solid var(--purple);padding:12px 18px;
+   box-shadow:0 -6px 20px rgba(157,75,255,.25);z-index:99;font-size:.9em}
 """
 
-# JavaScript i18n partagé : mémorise la langue et traduit les éléments
-# possédant des attributs data-fr / data-en.
-_I18N_JS = """
-function getLang(){return localStorage.getItem('lang')||'fr';}
-function applyLang(l){localStorage.setItem('lang',l);document.documentElement.lang=l;
- document.querySelectorAll('[data-fr]').forEach(function(e){
-   e.textContent=e.getAttribute('data-'+l);});
- var b=document.getElementById('lang');if(b)b.textContent=(l==='fr'?'English':'Français');}
+# Consentement cookies + gestion de la langue sur les pages publiques.
+# La persistance de la langue (localStorage) n'a lieu qu'avec le consentement.
+_CONSENT_JS = """
+function getConsent(){return localStorage.getItem('cookieConsent');}
+function persistLang(l){if(getConsent()==='yes')localStorage.setItem('lang',l);}
+function startLang(){return getConsent()==='yes'?
+ (localStorage.getItem('lang')||'fr'):'fr';}
+var _lang=startLang();
+function getLang(){return _lang;}
 function toggleLang(){applyLang(getLang()==='fr'?'en':'fr');}
+function cookieChoice(v){localStorage.setItem('cookieConsent',v);
+ if(v==='no'){localStorage.removeItem('lang');}else{persistLang(_lang);}
+ var bn=document.getElementById('cookie-banner');if(bn)bn.style.display='none';}
+function initConsent(){if(getConsent()===null){
+ var bn=document.getElementById('cookie-banner');if(bn)bn.style.display='flex';}}
 """
+
+# Bannière de consentement (bilingue), masquée par défaut.
+_COOKIE_BANNER = """
+ <div id="cookie-banner" style="display:none">
+  <span>🍪 Ce site peut mémoriser votre langue dans votre navigateur.
+  / This site can store your language in your browser.</span>
+  <span style="white-space:nowrap">
+   <button class="btn" onclick="cookieChoice('yes')">Accepter / Accept</button>
+   <button class="btn" onclick="cookieChoice('no')">Refuser / Decline</button>
+  </span>
+ </div>"""
 
 _LOGIN_HTML = """<!DOCTYPE html>
 <html lang="fr"><head><meta charset="utf-8">
@@ -304,8 +343,14 @@ _LOGIN_HTML = """<!DOCTYPE html>
       data-en="Privacy Policy"></a> ·
    <a href="/terms" data-fr="Conditions d'utilisation"
       data-en="Terms of Service"></a></p>
-</div>
-<script>""" + _I18N_JS + """applyLang(getLang());</script>
+</div>""" + _COOKIE_BANNER + """
+<script>""" + _CONSENT_JS + """
+function applyLang(l){_lang=l;document.documentElement.lang=l;persistLang(l);
+ document.querySelectorAll('[data-fr]').forEach(function(e){
+   e.textContent=e.getAttribute('data-'+l);});
+ var b=document.getElementById('lang');if(b)b.textContent=(l==='fr'?'English':'Français');}
+applyLang(_lang);initConsent();
+</script>
 </body></html>"""
 
 _DASHBOARD_HTML = """<!DOCTYPE html>
@@ -343,15 +388,17 @@ const T={fr:{lang:'English',logout:'Déconnexion',analytics:'Analytics',
  membersTotal:'Members (total)',membersLbl:'Members',cmdUsed:'Commands used',
  noData:'No data available yet.',expired:'Session expired.',
  reconnect:'Log in again'}};
-function getLang(){return localStorage.getItem('lang')||'fr';}
-function toggleLang(){localStorage.setItem('lang',getLang()==='fr'?'en':'fr');
- location.reload();}
-const L=T[getLang()];
-document.documentElement.lang=getLang();
-document.getElementById('lang').textContent=L.lang;
-document.getElementById('logout').textContent=L.logout;
+// Langue liée au COMPTE (fournie par le serveur, persistée côté serveur).
+let CUR='fr';
+let L=T[CUR];
+function applyHeader(){document.documentElement.lang=CUR;L=T[CUR];
+ document.getElementById('lang').textContent=L.lang;
+ document.getElementById('logout').textContent=L.logout;}
+applyHeader();
+function toggleLang(){const nl=CUR==='fr'?'en':'fr';
+ post('/api/lang',{lang:nl}).then(function(){location.reload();});}
 function fmtUptime(s){const d=Math.floor(s/86400),h=Math.floor(s%86400/3600),
- m=Math.floor(s%3600/60);const u=getLang()==='fr'?'j':'d';
+ m=Math.floor(s%3600/60);const u=CUR==='fr'?'j':'d';
  return (d?d+u+' ':'')+(h?h+'h ':'')+m+'m';}
 function tsLabels(p){return p.map(x=>new Date(x.ts*1000).toLocaleString());}
 const NEON={cyan:'#00eaff',magenta:'#ff2bd6',purple:'#9d4bff',
@@ -367,6 +414,7 @@ async function load(){
  if(!r.ok){document.getElementById('content').innerHTML=
    '<p>'+L.expired+' <a href="/login">'+L.reconnect+'</a></p>';return;}
  const d=await r.json();
+ CUR=d.lang||'fr';applyHeader();
  document.getElementById('who').textContent='@'+(d.user.username||'');
  if(d.analytics){const a=d.analytics;
    card('<h2>'+L.analytics+'</h2><div class="grid">'+
@@ -435,16 +483,15 @@ def _legal_page(title: str, fr_body: str, en_body: str) -> str:
  <footer><a href="/">Accueil / Home</a> ·
  <a href="/privacy">Confidentialité / Privacy</a> ·
  <a href="/terms">Conditions / Terms</a></footer>
-<script>
-function getLang(){return localStorage.getItem('lang')||'fr';}
-function applyLang(l){localStorage.setItem('lang',l);document.documentElement.lang=l;
+</div>""" + _COOKIE_BANNER + """
+<script>""" + _CONSENT_JS + """
+function applyLang(l){_lang=l;document.documentElement.lang=l;persistLang(l);
  document.getElementById('fr').style.display=(l==='fr'?'':'none');
  document.getElementById('en').style.display=(l==='en'?'':'none');
  document.getElementById('lang').textContent=(l==='fr'?'English':'Français');}
-function toggleLang(){applyLang(getLang()==='fr'?'en':'fr');}
-applyLang(getLang());
+applyLang(_lang);initConsent();
 </script>
-</div></body></html>"""
+</body></html>"""
     )
 
 
@@ -479,6 +526,11 @@ _PRIVACY_BODY = """
  Bot lit alors votre identifiant, votre nom d'utilisateur et la liste de vos
  serveurs afin de vérifier vos droits d'accès. Aucune de ces informations
  n'est revendue ni transmise à des tiers.</p>
+ <p>Un cookie de session strictement nécessaire est utilisé pour vous garder
+ connecté. Une fois connecté, votre <strong>choix de langue est mémorisé côté
+ serveur, rattaché à votre compte</strong>. Sur les pages publiques, la
+ mémorisation de la langue dans votre navigateur (stockage local) n'a lieu
+ qu'avec votre <strong>consentement</strong>.</p>
 
  <h2>3. Finalités</h2>
  <p>Les données servent uniquement au fonctionnement du Bot (modération,
@@ -575,6 +627,10 @@ _PRIVACY_BODY_EN = """
  <p>The admin panel uses Discord authentication (OAuth2). The Bot then reads
  your identifier, username and the list of your servers to verify your access
  rights. None of this information is sold or shared with third parties.</p>
+ <p>A strictly necessary session cookie keeps you logged in. Once logged in,
+ your <strong>language choice is stored server-side, tied to your account</strong>.
+ On public pages, storing the language in your browser (local storage) only
+ happens with your <strong>consent</strong>.</p>
 
  <h2>3. Purposes</h2>
  <p>Data is used solely to operate the Bot (moderation, statistics, reminders)
