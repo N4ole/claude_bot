@@ -29,7 +29,9 @@ OAUTH_CLIENT_SECRET = os.getenv("OAUTH_CLIENT_SECRET")
 OAUTH_REDIRECT_URI = os.getenv(
     "OAUTH_REDIRECT_URI", "http://localhost:8080/callback"
 )
-WEB_HOST = os.getenv("WEB_HOST", "0.0.0.0")
+# Écoute en local par défaut : exposition publique volontaire via WEB_HOST
+# (par ex. 0.0.0.0 derrière un reverse-proxy HTTPS).
+WEB_HOST = os.getenv("WEB_HOST", "127.0.0.1")
 WEB_PORT = int(os.getenv("WEB_PORT", "8080"))
 # Secret de signature des sessions (généré si absent : sessions non
 # persistantes entre deux redémarrages).

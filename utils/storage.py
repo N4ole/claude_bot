@@ -10,8 +10,23 @@ Structure du fichier :
     }
 """
 import json
+import os
 from pathlib import Path
 from threading import Lock
+
+
+def _atomic_dump(path: Path, data) -> None:
+    """Écrit du JSON de façon atomique : fichier temporaire puis os.replace.
+
+    Évite qu'un crash en cours d'écriture ne laisse un fichier tronqué ou
+    corrompu (os.replace est atomique sur un même système de fichiers).
+    """
+    tmp = path.with_name(f"{path.name}.tmp")
+    with tmp.open("w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2)
+        f.flush()
+        os.fsync(f.fileno())
+    os.replace(tmp, path)
 
 # Dossier des données runtime (à la racine du projet).
 _DATA = Path(__file__).resolve().parents[1] / "data"
@@ -46,8 +61,7 @@ def _read() -> dict:
 
 
 def _write(data: dict) -> None:
-    with _STORE_PATH.open("w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2)
+    _atomic_dump(_STORE_PATH, data)
 
 
 def add_watch(guild_id: int, user_id: int, channel_id: int) -> None:
@@ -98,8 +112,7 @@ def _read_owners() -> list[int]:
 
 
 def _write_owners(owners: list[int]) -> None:
-    with _OWNERS_PATH.open("w", encoding="utf-8") as f:
-        json.dump(owners, f, indent=2)
+    _atomic_dump(_OWNERS_PATH, owners)
 
 
 def get_owners() -> list[int]:
@@ -143,8 +156,7 @@ def _read_warns() -> dict:
 
 
 def _write_warns(data: dict) -> None:
-    with _WARNS_PATH.open("w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2)
+    _atomic_dump(_WARNS_PATH, data)
 
 
 def get_warns(guild_id: int, user_id: int) -> int:
@@ -211,8 +223,7 @@ def _read_confinements() -> dict:
 
 
 def _write_confinements(data: dict) -> None:
-    with _CONFINE_PATH.open("w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2)
+    _atomic_dump(_CONFINE_PATH, data)
 
 
 def set_confinement(guild_id: int, user_id: int, release_ts: float) -> None:
@@ -258,8 +269,7 @@ def _read_tempbans() -> dict:
 
 
 def _write_tempbans(data: dict) -> None:
-    with _TEMPBAN_PATH.open("w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2)
+    _atomic_dump(_TEMPBAN_PATH, data)
 
 
 def set_tempban(guild_id: int, user_id: int, release_ts: float) -> None:
@@ -294,19 +304,30 @@ def get_tempbans() -> list[tuple[int, int, float]]:
 # --------------------------------------------------------------------------- #
 # Réglages par serveur (guild_settings.json = {guild_id: {clé: valeur}})
 # --------------------------------------------------------------------------- #
+# Cache mémoire des réglages : lus à chaque commande (routage des logs).
+# Le fichier n'est écrit que via ce module (même processus), donc le cache
+# est invalidé à chaque écriture — pas de risque de divergence.
+_settings_cache: dict | None = None
+
+
 def _read_settings() -> dict:
-    if not _SETTINGS_PATH.exists():
-        return {}
-    try:
-        with _SETTINGS_PATH.open("r", encoding="utf-8") as f:
-            return json.load(f)
-    except (json.JSONDecodeError, OSError):
-        return {}
+    global _settings_cache
+    if _settings_cache is None:
+        if not _SETTINGS_PATH.exists():
+            _settings_cache = {}
+        else:
+            try:
+                with _SETTINGS_PATH.open("r", encoding="utf-8") as f:
+                    _settings_cache = json.load(f)
+            except (json.JSONDecodeError, OSError):
+                _settings_cache = {}
+    return _settings_cache
 
 
 def _write_settings(data: dict) -> None:
-    with _SETTINGS_PATH.open("w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2)
+    global _settings_cache
+    _atomic_dump(_SETTINGS_PATH, data)
+    _settings_cache = data
 
 
 def get_setting(guild_id: int, key: str, default=None):
@@ -337,8 +358,7 @@ def _read_modlog() -> dict:
 
 
 def _write_modlog(data: dict) -> None:
-    with _MODLOG_PATH.open("w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2)
+    _atomic_dump(_MODLOG_PATH, data)
 
 
 def add_modlog(
@@ -387,8 +407,7 @@ def _read_reminders() -> list[dict]:
 
 
 def _write_reminders(data: list[dict]) -> None:
-    with _REMINDERS_PATH.open("w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2)
+    _atomic_dump(_REMINDERS_PATH, data)
 
 
 def add_reminder(

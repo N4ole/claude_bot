@@ -683,6 +683,8 @@ _CATALOG: dict[str, dict[str, str]] = {
     "cmddesc.ban": {
         "fr": "Bannit un utilisateur (raison et durée optionnelle).",
         "en": "Ban a user (reason and optional duration)."},
+    "cmddesc.unban": {"fr": "Débannit un utilisateur par son ID.",
+                      "en": "Unban a user by their ID."},
     "cmddesc.8ball": {"fr": "Pose une question à la boule magique.",
                       "en": "Ask the magic 8-ball a question."},
     "cmddesc.analyse": {"fr": "Graphique d'activité du serveur sur 7 jours.",
@@ -866,6 +868,14 @@ _CATALOG: dict[str, dict[str, str]] = {
         "en": "❌ I don't have permission to ban this user (role too high?)."},
     "ban.failed": {"fr": "❌ Échec du bannissement : {error}",
                    "en": "❌ Ban failed: {error}"},
+    "unban.bad_id": {
+        "fr": "❌ Indique l'ID de l'utilisateur à débannir (ex: `123456789`).",
+        "en": "❌ Provide the ID of the user to unban (e.g. `123456789`)."},
+    "unban.not_banned": {
+        "fr": "ℹ️ Aucun bannissement trouvé pour l'ID `{id}`.",
+        "en": "ℹ️ No ban found for ID `{id}`."},
+    "unban.done": {"fr": "✅ Utilisateur `{id}` débanni.",
+                   "en": "✅ User `{id}` unbanned."},
     # --- Servers (détail owner) ---
     "srv.title": {"fr": "🌐 Serveurs du bot ({count})",
                   "en": "🌐 Bot servers ({count})"},

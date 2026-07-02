@@ -126,7 +126,7 @@ class Ban(commands.Cog):
     @commands.has_permissions(ban_members=True)
     @commands.bot_has_permissions(ban_members=True)
     async def ban(
-        self, ctx: commands.Context, member: discord.Member,
+        self, ctx: commands.Context, cible: discord.User,
         duree: str | None = None, *, raison: str | None = None,
     ) -> None:
         # La durée est optionnelle : si le 1er mot n'en est pas une, il fait
@@ -139,12 +139,17 @@ class Ban(commands.Cog):
                 duree = None
         reason = raison or t(ctx, "mod.no_reason")
 
+        # La cible peut être hors du serveur (ban par ID). Si elle est
+        # présente, on applique les garde-fous de hiérarchie.
+        member = ctx.guild.get_member(cible.id)
+
         # Garde-fous : soi-même et hiérarchie des rôles.
-        if member.id == ctx.author.id:
+        if cible.id == ctx.author.id:
             await ctx.send(t(ctx, "ban.self"))
             return
         if (
-            ctx.author.id != ctx.guild.owner_id
+            member is not None
+            and ctx.author.id != ctx.guild.owner_id
             and member.top_role >= ctx.author.top_role
         ):
             await ctx.send(t(ctx, "ban.hierarchy"))
@@ -155,31 +160,31 @@ class Ban(commands.Cog):
         # Prévenir l'utilisateur en MP AVANT le ban (après, le bot ne partage
         # plus de serveur avec lui). On indique serveur, raison et durée.
         dm = discord.Embed(
-            title=t(member, "ban.dm_title"),
-            description=t(member, "ban.dm_temp" if delta else "ban.dm_perm",
+            title=t(ctx.guild, "ban.dm_title"),
+            description=t(ctx.guild, "ban.dm_temp" if delta else "ban.dm_perm",
                           server=ctx.guild.name),
             color=discord.Color.red(),
         )
-        dm.add_field(name=t(member, "mod.reason_label"), value=reason,
+        dm.add_field(name=t(ctx.guild, "mod.reason_label"), value=reason,
                      inline=False)
         if until is not None:
             dm.add_field(
-                name=t(member, "mod.duration_label"),
+                name=t(ctx.guild, "mod.duration_label"),
                 value=f"{discord.utils.format_dt(until, style='F')} "
                       f"({discord.utils.format_dt(until, style='R')})",
                 inline=False,
             )
         else:
-            dm.add_field(name=t(member, "mod.duration_label"),
-                         value=t(member, "mod.permanent"), inline=False)
+            dm.add_field(name=t(ctx.guild, "mod.duration_label"),
+                         value=t(ctx.guild, "mod.permanent"), inline=False)
         try:
-            await member.send(embed=dm)
+            await cible.send(embed=dm)
         except (discord.HTTPException, discord.Forbidden):
-            pass  # MP fermés : on bannit quand même.
+            pass  # MP fermés / hors serveur : on bannit quand même.
 
         try:
             await ctx.guild.ban(
-                member, reason=f"{ctx.author} : {reason}",
+                cible, reason=f"{ctx.author} : {reason}",
                 delete_message_days=0,
             )
         except discord.Forbidden:
@@ -190,7 +195,7 @@ class Ban(commands.Cog):
             return
 
         storage.add_modlog(
-            ctx.guild.id, member.id, "ban", ctx.author.id,
+            ctx.guild.id, cible.id, "ban", ctx.author.id,
             duration=delta.total_seconds() if delta else None,
             detail=reason,
         )
@@ -200,11 +205,11 @@ class Ban(commands.Cog):
         )
         if delta is not None:
             release_ts = until.timestamp()
-            storage.set_tempban(ctx.guild.id, member.id, release_ts)
+            storage.set_tempban(ctx.guild.id, cible.id, release_ts)
             self.bot.loop.create_task(
-                self._schedule_unban(ctx.guild.id, member.id, release_ts)
+                self._schedule_unban(ctx.guild.id, cible.id, release_ts)
             )
-            embed.description = t(ctx, "ban.temp_desc", user=str(member),
+            embed.description = t(ctx, "ban.temp_desc", user=str(cible),
                                   reason=reason)
             embed.add_field(
                 name=t(ctx, "ban.until"),
@@ -217,18 +222,62 @@ class Ban(commands.Cog):
             log.info(
                 "Ban temporaire — %s (%s) banni par %s (%s) sur %s (%s) "
                 "jusqu'au %s : %s",
-                member, member.id, ctx.author, ctx.author.id,
+                cible, cible.id, ctx.author, ctx.author.id,
                 ctx.guild.name, ctx.guild.id, until.isoformat(), reason,
             )
         else:
-            embed.description = t(ctx, "ban.perm_desc", user=str(member),
+            embed.description = t(ctx, "ban.perm_desc", user=str(cible),
                                   reason=reason)
             log.info(
                 "Ban définitif — %s (%s) banni par %s (%s) sur %s (%s) : %s",
-                member, member.id, ctx.author, ctx.author.id,
+                cible, cible.id, ctx.author, ctx.author.id,
                 ctx.guild.name, ctx.guild.id, reason,
             )
         await ctx.send(embed=embed)
+
+    @commands.hybrid_command(
+        name="unban",
+        description="Débannit un utilisateur par son ID.",
+    )
+    @commands.guild_only()
+    @commands.has_permissions(ban_members=True)
+    @commands.bot_has_permissions(ban_members=True)
+    async def unban(
+        self, ctx: commands.Context, utilisateur: str,
+        *, raison: str | None = None,
+    ) -> None:
+        # On accepte un ID brut ou une mention <@id>.
+        raw = utilisateur.strip().strip("<@!>")
+        if not raw.isdigit():
+            await ctx.send(t(ctx, "unban.bad_id"))
+            return
+        user_id = int(raw)
+        reason = raison or t(ctx, "mod.no_reason")
+
+        try:
+            await ctx.guild.unban(
+                discord.Object(id=user_id), reason=f"{ctx.author} : {reason}"
+            )
+        except discord.NotFound:
+            await ctx.send(t(ctx, "unban.not_banned", id=user_id))
+            return
+        except discord.Forbidden:
+            await ctx.send(t(ctx, "ban.forbidden"))
+            return
+        except discord.HTTPException as exc:
+            await ctx.send(t(ctx, "ban.failed", error=exc))
+            return
+
+        # Retire une éventuelle temporisation persistée.
+        storage.clear_tempban(ctx.guild.id, user_id)
+        storage.add_modlog(ctx.guild.id, user_id, "unban", ctx.author.id,
+                           detail=reason)
+        log.info(
+            "Déban manuel — %s débanni par %s (%s) sur %s (%s) : %s",
+            user_id, ctx.author, ctx.author.id,
+            ctx.guild.name, ctx.guild.id, reason,
+        )
+        await ctx.send(t(ctx, "unban.done", id=user_id))
 
 
 async def setup(bot: commands.Bot) -> None:
