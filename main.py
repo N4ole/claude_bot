@@ -9,11 +9,10 @@ from web import logbuffer
 
 
 def setup_logging() -> None:
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-        datefmt="%H:%M:%S",
-    )
+    root = logging.getLogger()
+    root.setLevel(logging.INFO)
+    # Sortie console colorée (couleurs par niveau, auto-désactivées hors TTY).
+    root.addHandler(logsetup.console_handler())
     # Journalisation fichier triée (bot.log / actions.log / errors.log).
     logsetup.install()
     # Capture toute la sortie console pour la page « live » du panel web.

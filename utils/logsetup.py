@@ -15,6 +15,7 @@ une trace durable et organisée de l'activité du bot. Les logs sont :
   d'un historique glissant (30 jours par défaut).
 """
 import logging
+import sys
 from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
 
@@ -30,6 +31,61 @@ _DETAILED = logging.Formatter(
 
 # Nombre de jours d'historique conservés par fichier.
 _BACKUP_DAYS = 30
+
+# --- Couleurs console (codes ANSI) ---
+_RESET = "\033[0m"
+_DIM = "\033[2m"
+_BOLD = "\033[1m"
+# Couleur associée à chaque niveau de log.
+_LEVEL_COLORS = {
+    logging.DEBUG: "\033[36m",     # cyan
+    logging.INFO: "\033[32m",      # vert
+    logging.WARNING: "\033[33m",   # jaune
+    logging.ERROR: "\033[31m",     # rouge
+    logging.CRITICAL: "\033[1;97;41m",  # blanc gras sur fond rouge
+}
+
+
+class ColorFormatter(logging.Formatter):
+    """Formateur console : colore l'heure, le niveau et le nom du logger.
+
+    Les couleurs (codes ANSI) ne sont appliquées que si la sortie est un
+    vrai terminal, pour ne pas polluer les redirections vers un fichier.
+    """
+
+    def __init__(self, *, color: bool = True) -> None:
+        super().__init__(
+            "%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+            datefmt="%H:%M:%S",
+        )
+        self.color = color
+
+    def format(self, record: logging.LogRecord) -> str:
+        if not self.color:
+            return super().format(record)
+        # On ne mute jamais le record (partagé avec les handlers fichiers et
+        # le tampon web) : on assemble la ligne colorée à la main.
+        level_color = _LEVEL_COLORS.get(record.levelno, "")
+        ts = self.formatTime(record, self.datefmt)
+        msg = record.getMessage()
+        if record.exc_info:
+            msg = f"{msg}\n{self.formatException(record.exc_info)}"
+        if record.stack_info:
+            msg = f"{msg}\n{self.formatStack(record.stack_info)}"
+        return (
+            f"{_DIM}{ts}{_RESET} "
+            f"[{level_color}{_BOLD}{record.levelname}{_RESET}] "
+            f"{_DIM}{record.name}{_RESET}: "
+            f"{level_color}{msg}{_RESET}"
+        )
+
+
+def console_handler() -> logging.StreamHandler:
+    """Crée le handler console coloré (couleur auto selon TTY)."""
+    handler = logging.StreamHandler()
+    use_color = hasattr(handler.stream, "isatty") and handler.stream.isatty()
+    handler.setFormatter(ColorFormatter(color=use_color))
+    return handler
 
 
 class _ActionFilter(logging.Filter):
