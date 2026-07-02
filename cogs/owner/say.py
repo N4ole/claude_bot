@@ -12,7 +12,7 @@ class Say(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
-    @commands.hybrid_command(
+    @commands.command(
         name="say",
         description="Fait parler le bot dans le salon courant.",
     )

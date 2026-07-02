@@ -22,7 +22,7 @@ class Reload(commands.Cog):
                 return ext
         return None
 
-    @commands.hybrid_command(
+    @commands.command(
         name="reload",
         description="Recharge un cog à chaud (ou 'all' pour tout recharger).",
     )

@@ -1,0 +1,14 @@
+# Timer systemd : déclenche watcher-deploy.service périodiquement.
+# Par défaut toutes les minutes (première passe 2 min après le boot).
+# Le déploiement ne redémarre le bot que s'il y a de nouveaux commits.
+[Unit]
+Description=Watcher — vérifie GitHub et déploie périodiquement
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=1min
+AccuracySec=15s
+Unit=watcher-deploy.service
+
+[Install]
+WantedBy=timers.target

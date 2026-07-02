@@ -63,10 +63,42 @@ Variables disponibles :
 | `DEPLOY_SERVICE` | `watcher`  | Service systemd à redémarrer                |
 | `DEPLOY_PYTHON`  | `python3`  | Interpréteur utilisé pour `pip install`     |
 
-## 4. Déploiement « à chaque push » (cron)
+## 4. Lancement périodique « à chaque push » (installation clé en main)
 
-Pour déployer automatiquement, lancez `deploy.sh` toutes les minutes via
-cron. Il ne redémarre le bot **que** s'il y a réellement de nouveaux commits.
+Pour que le déploiement s'exécute **automatiquement** (et déploie donc les
+nouveaux commits sans intervention), un lancement périodique de `deploy.sh`
+est fourni prêt à l'emploi :
+
+```bash
+# Timer systemd (recommandé, journaux via journalctl) — toutes les minutes :
+scripts/install-autodeploy.sh systemd
+
+# ou via cron :
+scripts/install-autodeploy.sh cron
+
+# intervalle personnalisable (minutes) :
+DEPLOY_INTERVAL_MIN=2 scripts/install-autodeploy.sh systemd
+```
+
+L'installeur détecte automatiquement le **chemin du dépôt** et
+l'**utilisateur** courant (rien n'est codé en dur), rend les unités
+[`watcher-deploy.service`](../scripts/watcher-deploy.service) /
+[`watcher-deploy.timer`](../scripts/watcher-deploy.timer) (ou la ligne cron),
+et active le tout. Le déploiement ne redémarre le bot **que** s'il y a de
+nouveaux commits.
+
+Le redémarrage `systemctl` du bot nécessite les droits : autorisez
+l'utilisateur à redémarrer **uniquement** ce service, via sudoers (commande
+rappelée en fin d'installation) :
+
+```sudoers
+# /etc/sudoers.d/watcher-deploy
+watcher ALL=(root) NOPASSWD: /usr/bin/systemctl restart watcher
+```
+
+### Mise en place manuelle (équivalent)
+
+Si vous préférez installer sans le script :
 
 ```cron
 # crontab -e  (utilisateur qui possède le dépôt)
@@ -74,19 +106,8 @@ cron. Il ne redémarre le bot **que** s'il y a réellement de nouveaux commits.
   scripts/deploy.sh >> /opt/watcher/logs/deploy.log 2>&1
 ```
 
-Le redémarrage `systemctl` nécessite les droits : autorisez l'utilisateur du
-bot à redémarrer **uniquement** ce service, via sudoers :
-
-```sudoers
-# /etc/sudoers.d/watcher-deploy
-watcher ALL=(root) NOPASSWD: /usr/bin/systemctl restart watcher
-```
-
-### Alternative : timer systemd
-
-À la place de cron, un timer systemd (`watcher-deploy.timer` +
-`watcher-deploy.service` de type `oneshot` appelant `deploy.sh`) fait le même
-travail avec une meilleure intégration aux logs (`journalctl`).
+ou, côté systemd, en copiant les deux unités fournies dans
+`/etc/systemd/system/` puis `systemctl enable --now watcher-deploy.timer`.
 
 ## 5. Variante : déploiement instantané par webhook
 

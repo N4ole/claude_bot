@@ -1,0 +1,17 @@
+# Unité systemd « oneshot » : exécute une passe de déploiement.
+# Rendue exécutable périodiquement par watcher-deploy.timer.
+#
+# Les chemins ci-dessous (__REPO__, __USER__) sont remplacés par
+# scripts/install-autodeploy.sh. Tu peux aussi les éditer à la main.
+[Unit]
+Description=Watcher — déploiement auto depuis GitHub (passe unique)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=__USER__
+WorkingDirectory=__REPO__
+Environment=DEPLOY_BRANCH=main
+Environment=DEPLOY_SERVICE=watcher
+ExecStart=__REPO__/scripts/deploy.sh

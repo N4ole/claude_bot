@@ -19,7 +19,7 @@ class Owners(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
-    @commands.hybrid_command(
+    @commands.command(
         name="addowner",
         description="Ajoute un owner au bot.",
     )
@@ -32,7 +32,7 @@ class Owners(commands.Cog):
         storage.add_owner(user.id)
         await ctx.send(t(ctx, "own.added", user=user.mention))
 
-    @commands.hybrid_command(
+    @commands.command(
         name="rmowner",
         description="Retire un owner du bot.",
     )
@@ -47,7 +47,7 @@ class Owners(commands.Cog):
         else:
             await ctx.send(t(ctx, "own.not_owner", user=user.mention))
 
-    @commands.hybrid_command(
+    @commands.command(
         name="owners",
         description="Liste les owners du bot.",
     )

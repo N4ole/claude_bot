@@ -170,7 +170,7 @@ class Servers(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
-    @commands.hybrid_command(
+    @commands.command(
         name="serveurs",
         description="Détaille chaque serveur du bot (une page par serveur).",
     )

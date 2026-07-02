@@ -49,7 +49,7 @@ class Respond(commands.Cog):
         except (discord.HTTPException, discord.NotFound):
             return False
 
-    @commands.hybrid_command(
+    @commands.command(
         name="respond",
         description="Répond en MP à un propriétaire de serveur, ou `all` pour une annonce.",
     )

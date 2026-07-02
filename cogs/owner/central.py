@@ -24,7 +24,7 @@ class Central(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
-    @commands.hybrid_command(
+    @commands.command(
         name="central",
         description="Tableau de bord global du bot (owners).",
     )
