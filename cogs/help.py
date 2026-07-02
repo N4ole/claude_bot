@@ -130,6 +130,14 @@ class Help(commands.Cog):
         cog_name = command.cog.qualified_name if command.cog else ""
         return _CATEGORIES.get(cog_name, _DEFAULT)
 
+    def _describe(self, ctx, command: commands.Command) -> str:
+        """Description traduite de la commande, avec repli sur le décorateur."""
+        key = f"cmddesc.{command.qualified_name}"
+        translated = t(ctx, key)
+        if translated != key:
+            return translated
+        return command.description or command.help or t(ctx, "help.no_desc")
+
     def _is_hidden(self, command: commands.Command) -> bool:
         """True si la commande ne doit pas apparaître dans l'aide publique."""
         if command.hidden:
@@ -141,8 +149,7 @@ class Help(commands.Cog):
         embed = discord.Embed(
             title=t(ctx, "help.cmd_title", prefix=config.PREFIX,
                     name=command.qualified_name),
-            description=command.description or command.help
-            or t(ctx, "help.no_desc"),
+            description=self._describe(ctx, command),
             color=discord.Color.blurple(),
         )
         signature = command.signature.strip()
@@ -182,7 +189,7 @@ class Help(commands.Cog):
             if self._is_hidden(command):
                 continue
             cat_key, perm_key = self._category_of(command)
-            desc = command.description or t(ctx, "help.no_desc")
+            desc = self._describe(ctx, command)
             line = f"`{config.PREFIX}{command.name}` — {desc}"
             if perm_key:
                 line += f" 🔒 *{t(ctx, perm_key)}*"
