@@ -103,7 +103,12 @@ class Logs(commands.Cog):
         name="logs",
         description="Active/désactive les logs Discord par type, ou `status`.",
     )
-    @app_commands.choices(etat=appchoices.onoff(), categorie=_CAT_CHOICES)
+    @app_commands.choices(
+        etat=appchoices.onoff() + [
+            app_commands.Choice(name="Statut / Status", value="status"),
+        ],
+        categorie=_CAT_CHOICES,
+    )
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(manage_channels=True)
