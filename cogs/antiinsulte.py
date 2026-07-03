@@ -2,10 +2,11 @@
 import logging
 
 import discord
+from discord import app_commands
 from discord.ext import commands
 
 from utils import badwords
-from utils import storage
+from utils import appchoices, storage
 from utils.i18n import t
 
 log = logging.getLogger("action")
@@ -24,6 +25,7 @@ class AntiInsulte(commands.Cog):
         name="antiinsulte",
         description="Active/désactive la suppression des insultes (on/off).",
     )
+    @app_commands.choices(etat=appchoices.onoff())
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
     async def antiinsulte(self, ctx: commands.Context, etat: str) -> None:

@@ -3,9 +3,10 @@ import logging
 import re
 
 import discord
+from discord import app_commands
 from discord.ext import commands
 
-from utils import storage
+from utils import appchoices, storage
 from utils.i18n import t
 
 log = logging.getLogger("action")
@@ -32,6 +33,7 @@ class AntiPub(commands.Cog):
         name="antipub",
         description="Active/désactive la suppression des invitations Discord (on/off).",
     )
+    @app_commands.choices(etat=appchoices.onoff())
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
     async def antipub(self, ctx: commands.Context, etat: str) -> None:

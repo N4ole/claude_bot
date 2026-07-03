@@ -10,9 +10,10 @@ import random
 import string
 
 import discord
+from discord import app_commands
 from discord.ext import commands
 
-from utils import storage
+from utils import appchoices, storage
 from utils.i18n import t
 
 log = logging.getLogger(__name__)
@@ -84,6 +85,7 @@ class AntiRaid(commands.Cog):
         name="antiraid",
         description="Active/désactive le captcha à l'arrivée (on/off).",
     )
+    @app_commands.choices(etat=appchoices.onoff())
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
     async def antiraid(self, ctx: commands.Context, etat: str) -> None:

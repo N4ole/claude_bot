@@ -2,9 +2,10 @@
 import logging
 
 import discord
+from discord import app_commands
 from discord.ext import commands
 
-from utils import storage
+from utils import appchoices, storage
 from utils.i18n import t
 
 log = logging.getLogger(__name__)
@@ -23,6 +24,7 @@ class AntiBot(commands.Cog):
         name="antibot",
         description="Active/désactive le blocage des bots (on/off).",
     )
+    @app_commands.choices(etat=appchoices.onoff())
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
     async def antibot(self, ctx: commands.Context, etat: str) -> None:

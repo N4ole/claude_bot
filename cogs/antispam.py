@@ -5,9 +5,10 @@ from collections import defaultdict, deque
 from datetime import timedelta
 
 import discord
+from discord import app_commands
 from discord.ext import commands
 
-from utils import storage
+from utils import appchoices, storage
 from utils.i18n import t
 
 log = logging.getLogger("action")
@@ -36,6 +37,7 @@ class AntiSpam(commands.Cog):
         name="antispam",
         description="Active/désactive l'anti-spam (on/off).",
     )
+    @app_commands.choices(etat=appchoices.onoff())
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
     async def antispam(self, ctx: commands.Context, etat: str) -> None:
