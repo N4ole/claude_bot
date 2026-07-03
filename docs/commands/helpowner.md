@@ -2,8 +2,8 @@
 
 _Pas de description._
 
-- **Catégorie** : 👑 Owner
-- **Permission** : Owner du bot
+- **Catégorie** : 👑 Owner du bot
+- **Permission** : Aucune
 - **Disponible en** : préfixe uniquement
 - **Usage** : `§helpowner [commande]`
 

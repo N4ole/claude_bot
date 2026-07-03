@@ -2,9 +2,9 @@
 
 Tableau de bord global du bot (owners).
 
-- **Catégorie** : 👑 Owner
-- **Permission** : Owner du bot
-- **Disponible en** : préfixe (`§`) et slash (`/`)
+- **Catégorie** : 👑 Owner du bot
+- **Permission** : Aucune
+- **Disponible en** : préfixe uniquement
 - **Usage** : `§central`
 
 > Légende : `<...>` argument obligatoire · `[...]` facultatif.

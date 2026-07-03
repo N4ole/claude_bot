@@ -141,5 +141,28 @@ commandes slash (`app_commands` locale) pourrait être envisagée.
 4. **Q4** — écritures JSON atomiques (`os.replace`).
 5. **Q1–Q3, Q5, S4, F3–F4** — nettoyages de fond au fil de l'eau.
 
-> Aucun correctif n'est appliqué dans cette PR : ce document est un état des
-> lieux. Les corrections seront traitées dans des PR dédiées et revues.
+> Ce document reste l'état des lieux initial ; le suivi des corrections est
+> ci-dessous.
+
+---
+
+## 6. Suivi des corrections
+
+| Réf. | Sujet | Statut |
+|------|-------|--------|
+| S1 | Cookie `Secure` conditionnel + `WEB_HOST=127.0.0.1` | ✅ Corrigé |
+| S2 | `state` OAuth (anti-CSRF) | ✅ Corrigé |
+| S3 | XSS noms de serveurs (`esc()`) | ✅ Corrigé |
+| S4 | `str(error)` des `CheckFailure` | ⏳ À faire |
+| Q1 | Listeners `on_command_error` multiples | ✅ Documenté (`cogs/errors.py`) |
+| Q2 | Duplication des libellés de permissions | ✅ Consolidé (`dperm.*` i18n) |
+| Q3 | Paramètre `type` masquant le built-in | ✅ Corrigé (`categorie`) |
+| Q4 | Écritures JSON atomiques | ✅ Corrigé (`_atomic_dump`) |
+| Q5 | Cache des réglages | ✅ Corrigé |
+| F1 | Ban par ID (`discord.User`) | ✅ Corrigé |
+| F2 | Commande `unban` | ✅ Corrigé |
+| F3 | Indicateur « MP non délivré » | ✅ Corrigé (kick/ban) |
+| F4 | Localisation native des descriptions slash | ⏳ À faire (nécessite un test de sync live) |
+
+Restent **S4** (faible) et **F4** (nécessite de valider la synchronisation
+slash sur un vrai bot ; risqué à introduire sans test en conditions réelles).

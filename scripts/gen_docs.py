@@ -14,14 +14,15 @@ from pathlib import Path
 
 import config
 from bot import Watcher
-from cogs.help import _CATEGORIES, _DEFAULT
+from utils import categories as cats
+from utils.i18n import t
 
 ROOT = Path(__file__).resolve().parents[1]
 DOCS = ROOT / "docs"
 CMD_DIR = DOCS / "commands"
 CAT_DIR = DOCS / "categories"
 
-OWNER_CATEGORY = ("👑 Owner", "Owner du bot")
+OWNER_CATEGORY = ("👑 Owner du bot", None)
 
 
 def _slug(text: str) -> str:
@@ -30,10 +31,11 @@ def _slug(text: str) -> str:
 
 
 def _category_of(command) -> tuple[str, str | None]:
+    """(nom de catégorie affiché, libellé de permission) — via utils.categories."""
     if command.module and command.module.startswith("cogs.owner"):
         return OWNER_CATEGORY
-    cog = command.cog.qualified_name if command.cog else ""
-    return _CATEGORIES.get(cog, _DEFAULT)
+    cat_key, perm_key = cats.category_of(command)
+    return t(None, cat_key), (t(None, perm_key) if perm_key else None)
 
 
 def _availability(command) -> str:

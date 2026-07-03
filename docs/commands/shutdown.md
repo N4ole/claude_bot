@@ -2,9 +2,9 @@
 
 Éteint le bot.
 
-- **Catégorie** : 👑 Owner
-- **Permission** : Owner du bot
-- **Disponible en** : préfixe (`§`) et slash (`/`)
+- **Catégorie** : 👑 Owner du bot
+- **Permission** : Aucune
+- **Disponible en** : préfixe uniquement
 - **Usage** : `§shutdown`
 
 > Légende : `<...>` argument obligatoire · `[...]` facultatif.

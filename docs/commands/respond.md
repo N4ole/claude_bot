@@ -1,10 +1,10 @@
-# `§reload`
+# `§respond`
 
-Recharge un cog à chaud (ou 'all' pour tout recharger).
+Répond en MP à un propriétaire de serveur, ou `all` pour une annonce.
 
 - **Catégorie** : 👑 Owner du bot
 - **Permission** : Aucune
 - **Disponible en** : préfixe uniquement
-- **Usage** : `§reload [cog=all]`
+- **Usage** : `§respond <cible> <message>`
 
 > Légende : `<...>` argument obligatoire · `[...]` facultatif.

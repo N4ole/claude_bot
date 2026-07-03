@@ -2,9 +2,9 @@
 
 Fait parler le bot dans le salon courant.
 
-- **Catégorie** : 👑 Owner
-- **Permission** : Owner du bot
-- **Disponible en** : préfixe (`§`) et slash (`/`)
+- **Catégorie** : 👑 Owner du bot
+- **Permission** : Aucune
+- **Disponible en** : préfixe uniquement
 - **Usage** : `§say <message>`
 
 > Légende : `<...>` argument obligatoire · `[...]` facultatif.

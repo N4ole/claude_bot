@@ -6,11 +6,15 @@
 - [`§antipub`](../commands/antipub.md) — Active/désactive la suppression des invitations Discord (on/off). — 🔒 *Administrateur*
 - [`§antiraid`](../commands/antiraid.md) — Active/désactive le captcha à l'arrivée (on/off). — 🔒 *Administrateur*
 - [`§antispam`](../commands/antispam.md) — Active/désactive l'anti-spam (on/off). — 🔒 *Administrateur*
+- [`§ban`](../commands/ban.md) — Bannit un utilisateur (raison et durée optionnelle). — 🔒 *Bannir des membres*
 - [`§clear`](../commands/clear.md) — Supprime un nombre de messages du salon (max 100). — 🔒 *Gérer les messages*
 - [`§confine`](../commands/confine.md) — Isole un utilisateur dans un salon de confinement. — 🔒 *Administrateur*
+- [`§kick`](../commands/kick.md) — Expulse un utilisateur du serveur (avec raison). — 🔒 *Expulser des membres*
 - [`§langue`](../commands/langue.md) — Choisit la langue du bot pour ce serveur (fr/en). — 🔒 *Administrateur*
+- [`§logs`](../commands/logs.md) — Active/désactive les logs Discord par type (on/off <type>). — 🔒 *Administrateur*
 - [`§mute`](../commands/mute.md) — Coupe la parole à un utilisateur pour une durée (ex: 5m, 1h30m). — 🔒 *Administrateur*
 - [`§protections`](../commands/protections.md) — Affiche l'état des protections du serveur. — 🔒 *Administrateur*
+- [`§unban`](../commands/unban.md) — Débannit un utilisateur par son ID. — 🔒 *Bannir des membres*
 - [`§unconfine`](../commands/unconfine.md) — Libère un utilisateur du confinement. — 🔒 *Administrateur*
 - [`§unmute`](../commands/unmute.md) — Rend la parole à un utilisateur mute. — 🔒 *Administrateur*
 - [`§unwarn`](../commands/unwarn.md) — Retire un avertissement à un utilisateur. — 🔒 *Administrateur*

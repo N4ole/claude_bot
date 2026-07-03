@@ -49,10 +49,11 @@ class Kick(commands.Cog):
         )
         dm.add_field(name=t(member, "mod.reason_label"), value=reason,
                      inline=False)
+        dm_sent = True
         try:
             await member.send(embed=dm)
         except (discord.HTTPException, discord.Forbidden):
-            pass  # MP fermés : on expulse quand même.
+            dm_sent = False  # MP fermés : on expulse quand même.
 
         try:
             await member.kick(reason=f"{ctx.author} : {reason}")
@@ -71,7 +72,10 @@ class Kick(commands.Cog):
             member, member.id, ctx.author, ctx.author.id,
             ctx.guild.name, ctx.guild.id, reason,
         )
-        await ctx.send(t(ctx, "kick.done", user=str(member), reason=reason))
+        confirm = t(ctx, "kick.done", user=str(member), reason=reason)
+        if not dm_sent:
+            confirm += f"\n{t(ctx, 'mod.dm_failed')}"
+        await ctx.send(confirm)
 
 
 async def setup(bot: commands.Bot) -> None:

@@ -177,10 +177,11 @@ class Ban(commands.Cog):
         else:
             dm.add_field(name=t(ctx.guild, "mod.duration_label"),
                          value=t(ctx.guild, "mod.permanent"), inline=False)
+        dm_sent = True
         try:
             await cible.send(embed=dm)
         except (discord.HTTPException, discord.Forbidden):
-            pass  # MP fermés / hors serveur : on bannit quand même.
+            dm_sent = False  # MP fermés / hors serveur : on bannit quand même.
 
         try:
             await ctx.guild.ban(
@@ -233,6 +234,8 @@ class Ban(commands.Cog):
                 cible, cible.id, ctx.author, ctx.author.id,
                 ctx.guild.name, ctx.guild.id, reason,
             )
+        if not dm_sent:
+            embed.set_footer(text=t(ctx, "mod.dm_failed"))
         await ctx.send(embed=embed)
 
     @commands.hybrid_command(

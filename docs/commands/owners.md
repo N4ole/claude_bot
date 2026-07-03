@@ -2,9 +2,9 @@
 
 Liste les owners du bot.
 
-- **Catégorie** : 👑 Owner
-- **Permission** : Owner du bot
-- **Disponible en** : préfixe (`§`) et slash (`/`)
+- **Catégorie** : 👑 Owner du bot
+- **Permission** : Aucune
+- **Disponible en** : préfixe uniquement
 - **Usage** : `§owners`
 
 > Légende : `<...>` argument obligatoire · `[...]` facultatif.

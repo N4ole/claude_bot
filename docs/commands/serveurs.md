@@ -2,9 +2,9 @@
 
 Détaille chaque serveur du bot (une page par serveur).
 
-- **Catégorie** : 👑 Owner
-- **Permission** : Owner du bot
-- **Disponible en** : préfixe (`§`) et slash (`/`)
+- **Catégorie** : 👑 Owner du bot
+- **Permission** : Aucune
+- **Disponible en** : préfixe uniquement
 - **Usage** : `§serveurs`
 
 > Légende : `<...>` argument obligatoire · `[...]` facultatif.
