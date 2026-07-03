@@ -21,7 +21,9 @@ class Status(commands.Cog):
             title=t(ctx, "st.title"),
             color=discord.Color.blurple(),
         )
-        embed.add_field(name=t(ctx, "bi.version"), value=config.VERSION, inline=True)
+        version = t(ctx, "bi.version_val", version=config.VERSION) \
+            if config.BETA else config.VERSION
+        embed.add_field(name=t(ctx, "bi.version"), value=version, inline=True)
         embed.add_field(
             name=t(ctx, "bi.ping"),
             value=f"{round(self.bot.latency * 1000)} ms", inline=True,

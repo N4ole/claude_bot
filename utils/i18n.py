@@ -403,6 +403,8 @@ _CATALOG: dict[str, dict[str, str]] = {
     "bi.desc": {"fr": "Bot de modération et d'utilitaires.",
                 "en": "Moderation and utility bot."},
     "bi.version": {"fr": "Version", "en": "Version"},
+    "bi.beta": {"fr": "bêta", "en": "beta"},
+    "bi.version_val": {"fr": "{version} · bêta", "en": "{version} · beta"},
     "bi.servers": {"fr": "Serveurs", "en": "Servers"},
     "bi.ping": {"fr": "Ping", "en": "Ping"},
     "bi.uptime": {"fr": "Uptime", "en": "Uptime"},

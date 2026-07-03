@@ -105,6 +105,8 @@ class Watcher(commands.Bot):
 
     async def on_ready(self) -> None:
         log.info("Connecté en tant que %s (id: %s)", self.user, self.user.id)
+        suffix = f" · v{config.VERSION} bêta" if config.BETA \
+            else f" · v{config.VERSION}"
         await self.change_presence(
-            activity=discord.Game(name=f"{config.PREFIX}help")
+            activity=discord.Game(name=f"{config.PREFIX}help{suffix}")
         )

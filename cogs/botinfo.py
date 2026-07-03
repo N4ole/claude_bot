@@ -30,7 +30,9 @@ class BotInfo(commands.Cog):
         )
         if self.bot.user:
             embed.set_thumbnail(url=self.bot.user.display_avatar.url)
-        embed.add_field(name=t(ctx, "bi.version"), value=config.VERSION, inline=True)
+        version = t(ctx, "bi.version_val", version=config.VERSION) \
+            if config.BETA else config.VERSION
+        embed.add_field(name=t(ctx, "bi.version"), value=version, inline=True)
         embed.add_field(
             name=t(ctx, "bi.servers"), value=str(len(self.bot.guilds)), inline=True
         )

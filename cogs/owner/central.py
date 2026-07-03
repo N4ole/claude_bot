@@ -98,7 +98,9 @@ class Central(commands.Cog):
                         value=str(owners), inline=True)
         embed.add_field(
             name=t(ctx, "central.bot"),
-            value=t(ctx, "central.bot_val", version=config.VERSION,
+            value=t(ctx, "central.bot_val",
+                    version=(f"{config.VERSION} {t(ctx, 'bi.beta')}"
+                             if config.BETA else config.VERSION),
                     ping=round(self.bot.latency * 1000), uptime=uptime),
             inline=True,
         )

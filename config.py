@@ -20,8 +20,9 @@ GUILD_ID = int(_guild_id) if _guild_id and _guild_id.isdigit() else None
 _owner_id = os.getenv("OWNER_ID")
 OWNER_ID = int(_owner_id) if _owner_id and _owner_id.isdigit() else None
 
-# Version du bot.
-VERSION = "1.0.0"
+# Version du bot. Le bot est actuellement en bêta.
+VERSION = "0.20"
+BETA = True
 
 # --- Panel web (OAuth2 Discord) ------------------------------------------- #
 OAUTH_CLIENT_ID = os.getenv("OAUTH_CLIENT_ID")
