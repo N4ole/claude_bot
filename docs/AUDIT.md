@@ -92,12 +92,14 @@ Testé de bout en bout sur un clone en retard de plusieurs commits :
 - 🟡 `requirements.txt` épingle `discord.py>=2.3.0` alors que le code cible
   la série 2.7 ; relever le plancher (`>=2.4`) clarifierait le support.
 
-## 8. Améliorations mineures (par priorité)
+## 8. Améliorations mineures (appliquées)
 
-1. 🟡 Handlers d'erreur locaux : ajouter un repli générique pour ne jamais
-   laisser une erreur sans retour utilisateur (logs, remindme…).
-2. 🟡 `CheckFailure` : n'afficher que des messages i18n connus.
-3. 🟡 `requirements.txt` : relever le plancher `discord.py`.
+1. ✅ Handlers d'erreur locaux : repli générique (`error.generic`) — plus
+   aucune erreur sans retour utilisateur (11 handlers).
+2. ✅ `CheckFailure` : messages i18n uniquement ; type dédié
+   `checks.OwnerOnly` pour le message « réservé aux owners » (aucun
+   `str(error)` brut relayé).
+3. ✅ `requirements.txt` : plancher `discord.py>=2.4.0`.
 
 ## 9. Verdict
 

@@ -85,7 +85,9 @@ class RemindMe(commands.Cog):
                 "`remindme \"boire de l'eau\" 2h`)."
             )
         else:
-            raise error
+            # Repli : jamais d'erreur silencieuse pour l'utilisateur
+            # (errorreport prévient déjà les owners avec la traceback).
+            await ctx.send(t(ctx, "error.generic"))
 
 
 async def setup(bot: commands.Bot) -> None:

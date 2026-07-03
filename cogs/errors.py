@@ -13,6 +13,7 @@ import logging
 from discord.ext import commands
 
 import config
+from utils import checks
 from utils.i18n import t
 
 log = logging.getLogger(__name__)
@@ -54,9 +55,11 @@ class Errors(commands.Cog):
             await ctx.send(t(ctx, "error.no_dm"))
         elif isinstance(error, commands.PrivateMessageOnly):
             await ctx.send(t(ctx, "error.dm_only"))
+        elif isinstance(error, checks.OwnerOnly):
+            await ctx.send(t(ctx, "error.owner_only"))
         elif isinstance(error, commands.CheckFailure):
-            message = str(error) or t(ctx, "error.check_failure")
-            await ctx.send(f"⛔ {message}" if str(error) else message)
+            # Message i18n uniquement : ne jamais relayer str(error) brut.
+            await ctx.send(t(ctx, "error.check_failure"))
         elif isinstance(error, commands.MissingRequiredArgument):
             usage = (
                 f"{config.PREFIX}{ctx.command.qualified_name} "

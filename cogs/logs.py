@@ -197,7 +197,9 @@ class Logs(commands.Cog):
                              prefix=ctx.prefix or config.PREFIX,
                              types=_types_list()))
         else:
-            raise error
+            # Repli : jamais d'erreur silencieuse pour l'utilisateur
+            # (errorreport prévient déjà les owners avec la traceback).
+            await ctx.send(t(ctx, "error.generic"))
 
     # ----------------------------------------------------------------- #
     # Routage des événements vers le salon de log de leur catégorie
