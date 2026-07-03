@@ -5,6 +5,15 @@ import config
 from utils import storage
 
 
+class OwnerOnly(commands.CheckFailure):
+    """Levée quand une commande réservée aux owners est refusée.
+
+    Type dédié (plutôt qu'un message dans l'exception) : le gestionnaire
+    d'erreurs global affiche un message i18n selon le type, sans jamais
+    relayer le texte brut d'une exception.
+    """
+
+
 def is_owner_id(user_id: int) -> bool:
     """True si l'utilisateur est l'owner principal ou un owner additionnel."""
     if config.OWNER_ID is not None and user_id == config.OWNER_ID:
@@ -26,8 +35,6 @@ def is_owner():
     async def predicate(ctx: commands.Context) -> bool:
         if is_owner_id(ctx.author.id):
             return True
-        raise commands.CheckFailure(
-            "Cette commande est réservée aux owners du bot."
-        )
+        raise OwnerOnly()
 
     return commands.check(predicate)
