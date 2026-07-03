@@ -9,10 +9,11 @@ indépendamment ; `all` agit sur tous les types.
 import logging
 
 import discord
+from discord import app_commands
 from discord.ext import commands
 
 import config
-from utils import categories, storage
+from utils import appchoices, categories, storage
 from utils.i18n import t
 
 log = logging.getLogger("action")
@@ -22,6 +23,12 @@ SETTING = "logtypes"  # {token: channel_id}
 
 _ON = {"on", "activer", "enable", "true", "1"}
 _OFF = {"off", "désactiver", "desactiver", "disable", "false", "0"}
+
+# Choix slash pour le type de log : les catégories du help + « Tous ».
+_CAT_CHOICES = [
+    app_commands.Choice(name=t(None, cat_key), value=token)
+    for token, cat_key in categories.TYPE_TO_CAT.items()
+] + [app_commands.Choice(name="Tous / All", value="all")]
 
 
 def _types_list() -> str:
@@ -72,6 +79,7 @@ class Logs(commands.Cog):
         name="logs",
         description="Active/désactive les logs Discord par type (on/off <type>).",
     )
+    @app_commands.choices(etat=appchoices.onoff(), categorie=_CAT_CHOICES)
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(manage_channels=True)

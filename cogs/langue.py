@@ -1,7 +1,8 @@
 """Commande admin `langue` : choisit la langue du bot (fr/en) pour le serveur."""
+from discord import app_commands
 from discord.ext import commands
 
-from utils import storage
+from utils import appchoices, storage
 from utils.i18n import LANGS, t
 
 _ALIASES = {
@@ -20,6 +21,7 @@ class Langue(commands.Cog):
         name="langue",
         description="Choisit la langue du bot pour ce serveur (fr/en).",
     )
+    @app_commands.choices(langue=appchoices.langs())
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
     async def langue(
