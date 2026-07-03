@@ -21,23 +21,42 @@
 
 set -euo pipefail
 
+# --- Auto-protection --------------------------------------------------------
+# Le `git reset --hard` plus bas remplace CE script pendant qu'il s'exécute
+# (cas où une mise à jour modifie deploy.sh lui-même). Pour ne jamais scier la
+# branche sur laquelle on est assis, on se ré-exécute depuis une copie
+# temporaire hors du dépôt ; la version d'origine du script va alors au bout,
+# et la nouvelle version s'appliquera au prochain déploiement.
+if [ -z "${DEPLOY_SELF_COPY:-}" ]; then
+    DEPLOY_REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+    export DEPLOY_REPO_ROOT
+    _self_copy="$(mktemp "${TMPDIR:-/tmp}/watcher-deploy.XXXXXX")"
+    cp "$0" "$_self_copy"
+    DEPLOY_SELF_COPY="$_self_copy" exec bash "$_self_copy" "$@"
+fi
+
 BRANCH="${DEPLOY_BRANCH:-main}"
 SERVICE="${DEPLOY_SERVICE:-watcher}"
 PYTHON="${DEPLOY_PYTHON:-python3}"
 
-# Se placer à la racine du dépôt (le script est dans scripts/).
-cd "$(dirname "$0")/.."
+# Racine du dépôt, transmise par la phase d'auto-copie ci-dessus.
+cd "$DEPLOY_REPO_ROOT"
 REPO_ROOT="$(pwd)"
 
 log() { printf '[deploy] %s\n' "$*"; }
 
 # Verrou simple pour éviter deux déploiements simultanés (cron rapproché).
 LOCK="${REPO_ROOT}/.deploy.lock"
+cleanup() {
+    rmdir "$LOCK" 2>/dev/null || true
+    rm -f "$DEPLOY_SELF_COPY" 2>/dev/null || true
+}
 if ! mkdir "$LOCK" 2>/dev/null; then
     log "Un déploiement est déjà en cours (verrou $LOCK) — abandon."
+    rm -f "$DEPLOY_SELF_COPY" 2>/dev/null || true
     exit 0
 fi
-trap 'rmdir "$LOCK" 2>/dev/null || true' EXIT
+trap cleanup EXIT
 
 git fetch --quiet origin "$BRANCH"
 
