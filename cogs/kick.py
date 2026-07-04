@@ -4,7 +4,7 @@ import logging
 import discord
 from discord.ext import commands
 
-from utils import storage
+from utils import checks, storage
 from utils.i18n import t
 
 log = logging.getLogger("action")
@@ -20,9 +20,7 @@ class Kick(commands.Cog):
         name="kick",
         description="Expulse un utilisateur du serveur (avec raison).",
     )
-    @commands.guild_only()
-    @commands.has_permissions(kick_members=True)
-    @commands.bot_has_permissions(kick_members=True)
+    @checks.kick_perms()
     async def kick(
         self, ctx: commands.Context, member: discord.Member,
         *, raison: str | None = None,
@@ -33,10 +31,7 @@ class Kick(commands.Cog):
         if member.id == ctx.author.id:
             await ctx.send(t(ctx, "kick.self"))
             return
-        if (
-            ctx.author.id != ctx.guild.owner_id
-            and member.top_role >= ctx.author.top_role
-        ):
+        if not checks.can_act_on(ctx.author, member):
             await ctx.send(t(ctx, "kick.hierarchy"))
             return
 

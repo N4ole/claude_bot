@@ -13,7 +13,7 @@ from discord import app_commands
 from discord.ext import commands
 
 import config
-from utils import appchoices, categories, storage
+from utils import appchoices, categories, checks, storage
 from utils.i18n import t
 
 log = logging.getLogger("action")
@@ -109,8 +109,7 @@ class Logs(commands.Cog):
         ],
         categorie=_CAT_CHOICES,
     )
-    @commands.guild_only()
-    @commands.has_permissions(administrator=True)
+    @checks.admin()
     @commands.bot_has_permissions(manage_channels=True)
     async def logs(
         self, ctx: commands.Context, etat: str, categorie: str | None = None

@@ -2,7 +2,7 @@
 import discord
 from discord.ext import commands
 
-from utils import storage
+from utils import checks, storage
 from utils.i18n import t
 
 # Protections activables via commande (clé de réglage -> clé de libellé i18n).
@@ -25,8 +25,7 @@ class Protections(commands.Cog):
         name="protections",
         description="Affiche l'état des protections du serveur.",
     )
-    @commands.guild_only()
-    @commands.has_permissions(administrator=True)
+    @checks.admin()
     async def protections(self, ctx: commands.Context) -> None:
         embed = discord.Embed(
             title=t(ctx, "prot.title"),

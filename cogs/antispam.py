@@ -8,7 +8,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from utils import appchoices, storage
+from utils import appchoices, checks, storage
 from utils.i18n import t
 
 log = logging.getLogger("action")
@@ -38,8 +38,7 @@ class AntiSpam(commands.Cog):
         description="Active/désactive l'anti-spam (on/off).",
     )
     @app_commands.choices(etat=appchoices.onoff())
-    @commands.guild_only()
-    @commands.has_permissions(administrator=True)
+    @checks.admin()
     async def antispam(self, ctx: commands.Context, etat: str) -> None:
         value = etat.lower()
         if value in _ON:
@@ -58,7 +57,7 @@ class AntiSpam(commands.Cog):
     async def on_message(self, message: discord.Message) -> None:
         if message.author.bot or message.guild is None:
             return
-        if message.author.guild_permissions.administrator:
+        if checks.is_admin(message.author):
             return
         if not storage.get_setting(message.guild.id, "antispam", False):
             return

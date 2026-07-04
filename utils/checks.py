@@ -1,4 +1,23 @@
-"""Vérifications (checks) réutilisables pour les commandes."""
+"""Vérifications de permissions : SOURCE UNIQUE pour tout le bot.
+
+Toute vérification de permission (décorateur de commande ou prédicat
+utilisé dans un listener) vit ici. Les cogs ne réécrivent JAMAIS de logique
+de permission : ils appellent une fonction de ce module.
+
+Décorateurs de commandes :
+    @checks.admin()            serveur uniquement + Administrateur
+    @checks.kick_perms()       serveur + Expulser (utilisateur ET bot)
+    @checks.ban_perms()        serveur + Bannir (utilisateur ET bot)
+    @checks.manage_messages()  serveur + Gérer les messages
+    @checks.server_owner()     serveur + propriétaire du serveur Discord
+    @checks.is_owner()         owners du bot (préfixe/MP inclus)
+
+Prédicats (listeners, logique interne) :
+    checks.is_admin(member)               exemption automod, etc.
+    checks.can_act_on(author, target)     hiérarchie des rôles (kick/ban)
+    checks.is_owner_or_server_owner(ctx)  export, fonctions partagées
+    checks.is_owner_id(user_id)           owners du bot (web, listeners)
+"""
 from discord.ext import commands
 
 import config
@@ -12,6 +31,11 @@ class OwnerOnly(commands.CheckFailure):
     d'erreurs global affiche un message i18n selon le type, sans jamais
     relayer le texte brut d'une exception.
     """
+
+
+class ServerOwnerOnly(commands.CheckFailure):
+    """Levée quand une commande réservée au propriétaire du serveur est
+    refusée. Affichée en i18n par le gestionnaire global (`co.not_owner`)."""
 
 
 def is_owner_id(user_id: int) -> bool:
@@ -38,3 +62,89 @@ def is_owner():
         raise OwnerOnly()
 
     return commands.check(predicate)
+
+
+# --------------------------------------------------------------------------- #
+# Décorateurs de commandes (empilent les checks discord.py standard)
+# --------------------------------------------------------------------------- #
+def _compose(*decorators):
+    """Combine plusieurs décorateurs discord.py en un seul."""
+
+    def deco(func):
+        for d in reversed(decorators):
+            func = d(func)
+        return func
+
+    return deco
+
+
+def admin():
+    """Serveur uniquement + permission Administrateur."""
+    return _compose(
+        commands.guild_only(),
+        commands.has_permissions(administrator=True),
+    )
+
+
+def kick_perms():
+    """Serveur + « Expulser des membres » (pour l'utilisateur ET le bot)."""
+    return _compose(
+        commands.guild_only(),
+        commands.has_permissions(kick_members=True),
+        commands.bot_has_permissions(kick_members=True),
+    )
+
+
+def ban_perms():
+    """Serveur + « Bannir des membres » (pour l'utilisateur ET le bot)."""
+    return _compose(
+        commands.guild_only(),
+        commands.has_permissions(ban_members=True),
+        commands.bot_has_permissions(ban_members=True),
+    )
+
+
+def manage_messages():
+    """Serveur uniquement + permission « Gérer les messages »."""
+    return _compose(
+        commands.guild_only(),
+        commands.has_permissions(manage_messages=True),
+    )
+
+
+def server_owner():
+    """Serveur uniquement + réservé au propriétaire du serveur Discord."""
+
+    async def predicate(ctx: commands.Context) -> bool:
+        if ctx.guild is not None and ctx.author.id == ctx.guild.owner_id:
+            return True
+        raise ServerOwnerOnly()
+
+    return _compose(commands.guild_only(), commands.check(predicate))
+
+
+# --------------------------------------------------------------------------- #
+# Prédicats (listeners et logique interne — pas des checks de commande)
+# --------------------------------------------------------------------------- #
+def is_admin(member) -> bool:
+    """True si le membre est administrateur du serveur (exemption automod)."""
+    perms = getattr(member, "guild_permissions", None)
+    return bool(perms and perms.administrator)
+
+
+def can_act_on(author, target) -> bool:
+    """True si `author` peut sanctionner `target` (hiérarchie des rôles).
+
+    Le propriétaire du serveur outrepasse toujours ; sinon le rôle le plus
+    haut de l'auteur doit être STRICTEMENT au-dessus de celui de la cible.
+    """
+    if author.guild is not None and author.id == author.guild.owner_id:
+        return True
+    return target.top_role < author.top_role
+
+
+def is_owner_or_server_owner(ctx: commands.Context) -> bool:
+    """True si l'auteur est owner du bot OU propriétaire du serveur."""
+    if is_owner_id(ctx.author.id):
+        return True
+    return ctx.guild is not None and ctx.author.id == ctx.guild.owner_id

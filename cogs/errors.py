@@ -57,6 +57,8 @@ class Errors(commands.Cog):
             await ctx.send(t(ctx, "error.dm_only"))
         elif isinstance(error, checks.OwnerOnly):
             await ctx.send(t(ctx, "error.owner_only"))
+        elif isinstance(error, checks.ServerOwnerOnly):
+            await ctx.send(t(ctx, "co.not_owner"))
         elif isinstance(error, commands.CheckFailure):
             # Message i18n uniquement : ne jamais relayer str(error) brut.
             await ctx.send(t(ctx, "error.check_failure"))

@@ -9,7 +9,7 @@ from datetime import timedelta
 import discord
 from discord.ext import commands
 
-from utils import storage
+from utils import checks, storage
 from utils.duration import parse_duration
 from utils.i18n import t
 
@@ -27,8 +27,7 @@ class Mute(commands.Cog):
         name="mute",
         description="Coupe la parole à un utilisateur pour une durée (ex: 5m, 1h30m).",
     )
-    @commands.guild_only()
-    @commands.has_permissions(administrator=True)
+    @checks.admin()
     async def mute(
         self, ctx: commands.Context, member: discord.Member, duree: str
     ) -> None:
@@ -75,8 +74,7 @@ class Mute(commands.Cog):
         name="unmute",
         description="Rend la parole à un utilisateur mute.",
     )
-    @commands.guild_only()
-    @commands.has_permissions(administrator=True)
+    @checks.admin()
     async def unmute(self, ctx: commands.Context, member: discord.Member) -> None:
         if member.timed_out_until is None:
             await ctx.send(t(ctx, "unmute.not_muted", user=member.mention))

@@ -2,7 +2,7 @@
 import discord
 from discord.ext import commands
 
-from utils import automod
+from utils import automod, checks
 
 
 class AntiEmoji(commands.Cog):
@@ -18,7 +18,7 @@ class AntiEmoji(commands.Cog):
         if message.author.bot or message.guild is None:
             return
         # On ne sanctionne pas les administrateurs.
-        if message.author.guild_permissions.administrator:
+        if checks.is_admin(message.author):
             return
         if not automod.is_emoji_spam(message.content):
             return

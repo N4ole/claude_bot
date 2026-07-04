@@ -10,7 +10,7 @@ from collections import defaultdict
 import discord
 from discord.ext import commands, tasks
 
-from utils import analytics
+from utils import analytics, checks
 from utils.i18n import t
 
 log = logging.getLogger(__name__)
@@ -129,8 +129,7 @@ class Analyse(commands.Cog):
         name="analyse",
         description="Graphique d'activité du serveur sur 7 jours.",
     )
-    @commands.guild_only()
-    @commands.has_permissions(administrator=True)
+    @checks.admin()
     async def analyse(self, ctx: commands.Context) -> None:
         await ctx.defer()
         # On vide le tampon pour inclure les données les plus récentes.

@@ -45,17 +45,11 @@ class ContactOwner(commands.Cog):
         name="contactowner",
         description="Contacte les owners du bot (réservé au propriétaire du serveur).",
     )
-    @commands.guild_only()
+    @checks.server_owner()
     async def contactowner(
         self, ctx: commands.Context, *, message: str
     ) -> None:
         guild = ctx.guild
-
-        # Réservé au propriétaire du serveur Discord.
-        if ctx.author.id != guild.owner_id:
-            await ctx.send(t(ctx, "co.not_owner"))
-            return
-
         invite_url = await self._create_invite(guild)
 
         embed = discord.Embed(

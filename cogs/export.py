@@ -113,8 +113,7 @@ class Export(commands.Cog):
         self, ctx: commands.Context, format: str, periode: str | None = None,
     ) -> None:
         # Réservé aux owners du bot et au propriétaire du serveur.
-        if not (checks.is_owner_id(ctx.author.id)
-                or ctx.author.id == ctx.guild.owner_id):
+        if not checks.is_owner_or_server_owner(ctx):
             await ctx.send(t(ctx, "export.forbidden"))
             return
 

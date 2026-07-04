@@ -2,7 +2,7 @@
 from discord import app_commands
 from discord.ext import commands
 
-from utils import appchoices, storage
+from utils import appchoices, checks, storage
 from utils.i18n import LANGS, t
 
 _ALIASES = {
@@ -22,8 +22,7 @@ class Langue(commands.Cog):
         description="Choisit la langue du bot pour ce serveur (fr/en).",
     )
     @app_commands.choices(langue=appchoices.langs())
-    @commands.guild_only()
-    @commands.has_permissions(administrator=True)
+    @checks.admin()
     async def langue(
         self, ctx: commands.Context, langue: str | None = None
     ) -> None:

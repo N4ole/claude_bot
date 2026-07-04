@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 import discord
 from discord.ext import commands
 
-from utils import storage
+from utils import checks, storage
 from utils.i18n import t
 
 _LABEL_KEYS = {
@@ -43,8 +43,7 @@ class UserStatus(commands.Cog):
         name="userstatus",
         description="Affiche l'historique des sanctions d'un utilisateur.",
     )
-    @commands.guild_only()
-    @commands.has_permissions(administrator=True)
+    @checks.admin()
     async def userstatus(
         self, ctx: commands.Context, member: discord.Member
     ) -> None:

@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 import discord
 from discord.ext import commands
 
-from utils import storage
+from utils import checks, storage
 from utils.i18n import t
 
 CATEGORY_NAME = "WATCHED USER"
@@ -99,8 +99,7 @@ class Watch(commands.Cog):
         name="watch",
         description="Surveille un utilisateur et journalise son activité.",
     )
-    @commands.guild_only()
-    @commands.has_permissions(administrator=True)
+    @checks.admin()
     async def watch(self, ctx: commands.Context, member: discord.Member) -> None:
         guild = ctx.guild
 
@@ -148,8 +147,7 @@ class Watch(commands.Cog):
         name="unwatch",
         description="Arrête la surveillance d'un utilisateur.",
     )
-    @commands.guild_only()
-    @commands.has_permissions(administrator=True)
+    @checks.admin()
     async def unwatch(self, ctx: commands.Context, member: discord.Member) -> None:
         if storage.get_channel_id(ctx.guild.id, member.id) is None:
             await ctx.send(t(ctx, "unwatch.not", user=member.mention))
@@ -163,8 +161,7 @@ class Watch(commands.Cog):
         name="watchlist",
         description="Liste les utilisateurs actuellement surveillés.",
     )
-    @commands.guild_only()
-    @commands.has_permissions(administrator=True)
+    @checks.admin()
     async def watchlist(self, ctx: commands.Context) -> None:
         watches = storage.get_guild_watches(ctx.guild.id)
         if not watches:

@@ -104,13 +104,52 @@ ensemble (`mute`/`unmute`, `ban`/`unban`, `confine`/`unconfine`,
 - `categories.py` — **source unique** du mapping cog → catégorie
   (`cat.*`) + permissions, partagé par le **help** ET les **logs**
   (`TYPE_TO_CAT` / `CAT_TO_TYPE` / `resolve_type`).
-- `checks.py` — `is_owner_id`, `is_owner()`, `all_owner_ids()`.
+- `checks.py` — **SOURCE UNIQUE de toutes les vérifications de
+  permissions** (voir §5 bis). Décorateurs : `admin()`, `kick_perms()`,
+  `ban_perms()`, `manage_messages()`, `server_owner()`, `is_owner()`.
+  Prédicats : `is_admin(member)`, `can_act_on(author, target)`,
+  `is_owner_or_server_owner(ctx)`, `is_owner_id`, `all_owner_ids()`.
+  Exceptions dédiées : `OwnerOnly`, `ServerOwnerOnly` (affichées en i18n
+  par `cogs/errors.py`).
 - `duration.py` — `parse_duration("1h30m")` → timedelta ; `human(delta)`.
 - `automod.py` — escalade partagée caps/emoji. `badwords.py` — dictionnaire
   multilingue anti-insulte. `analytics.py` — séries pour `analyse`.
 - `logsetup.py` — **console colorée** (ANSI par niveau, seulement si TTY ; le
   `LogRecord` n'est jamais muté) + **fichiers triés** (`bot.log`,
   `actions.log`, `errors.log`, rotation quotidienne, 30 jours).
+
+### 5 bis. Permissions centralisées (IMPORTANT)
+
+**Ne jamais réécrire de vérification de permission dans un cog** : tout vit
+dans `utils/checks.py` (un fichier = cet élément), on ne fait qu'appeler la
+fonction. Concrètement :
+
+```python
+from utils import checks
+
+@commands.hybrid_command(...)
+@checks.admin()                    # au lieu de guild_only + has_permissions
+async def macommande(...):
+    if not checks.can_act_on(ctx.author, member):   # hiérarchie kick/ban
+        ...
+
+# Dans un listener (automod) :
+if checks.is_admin(message.author):   # exemption admins
+    return
+```
+
+- Décorateurs : `admin()`, `kick_perms()`, `ban_perms()`,
+  `manage_messages()`, `server_owner()`, `is_owner()` — ils incluent déjà
+  `guild_only` et les permissions bot quand pertinent.
+- Prédicats : `is_admin(member)` (exemption automod),
+  `can_act_on(author, target)` (hiérarchie des rôles, owner du serveur
+  outrepasse), `is_owner_or_server_owner(ctx)` (export…),
+  `is_owner_id(user_id)` (web, listeners).
+- Les refus lèvent des exceptions typées (`OwnerOnly`, `ServerOwnerOnly`,
+  `MissingPermissions`…) traduites par le gestionnaire global
+  (`cogs/errors.py`) — aucun message de permission n'est écrit dans les cogs.
+- **Ajouter une nouvelle règle de permission = ajouter UNE fonction dans
+  `utils/checks.py`**, jamais du code inline dans un cog.
 
 ## 6. Web (`web/`)
 

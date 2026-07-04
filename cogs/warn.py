@@ -13,7 +13,7 @@ from datetime import datetime, timedelta, timezone
 import discord
 from discord.ext import commands
 
-from utils import storage
+from utils import checks, storage
 from utils.i18n import t
 
 log = logging.getLogger(__name__)
@@ -126,8 +126,7 @@ class Warn(commands.Cog):
         name="warn",
         description="Avertit un utilisateur (sanction progressive).",
     )
-    @commands.guild_only()
-    @commands.has_permissions(administrator=True)
+    @checks.admin()
     async def warn(self, ctx: commands.Context, member: discord.Member) -> None:
         level = storage.add_warn(ctx.guild.id, member.id)
         await self._sync_warn_role(member, level)
@@ -150,8 +149,7 @@ class Warn(commands.Cog):
         name="unwarn",
         description="Retire un avertissement à un utilisateur.",
     )
-    @commands.guild_only()
-    @commands.has_permissions(administrator=True)
+    @checks.admin()
     async def unwarn(self, ctx: commands.Context, member: discord.Member) -> None:
         current = storage.get_warns(ctx.guild.id, member.id)
         if current <= 0:
@@ -180,8 +178,7 @@ class Warn(commands.Cog):
         name="warns",
         description="Affiche le nombre d'avertissements d'un utilisateur.",
     )
-    @commands.guild_only()
-    @commands.has_permissions(administrator=True)
+    @checks.admin()
     async def warns(self, ctx: commands.Context, member: discord.Member) -> None:
         count = storage.get_warns(ctx.guild.id, member.id)
         await ctx.send(

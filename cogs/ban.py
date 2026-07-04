@@ -14,7 +14,7 @@ from datetime import datetime, timezone
 import discord
 from discord.ext import commands
 
-from utils import storage
+from utils import checks, storage
 from utils.duration import parse_duration
 from utils.i18n import t
 
@@ -122,9 +122,7 @@ class Ban(commands.Cog):
         name="ban",
         description="Bannit un utilisateur (raison et durée optionnelle).",
     )
-    @commands.guild_only()
-    @commands.has_permissions(ban_members=True)
-    @commands.bot_has_permissions(ban_members=True)
+    @checks.ban_perms()
     async def ban(
         self, ctx: commands.Context, cible: discord.User,
         duree: str | None = None, *, raison: str | None = None,
@@ -147,10 +145,8 @@ class Ban(commands.Cog):
         if cible.id == ctx.author.id:
             await ctx.send(t(ctx, "ban.self"))
             return
-        if (
-            member is not None
-            and ctx.author.id != ctx.guild.owner_id
-            and member.top_role >= ctx.author.top_role
+        if member is not None and not checks.can_act_on(
+            ctx.author, member
         ):
             await ctx.send(t(ctx, "ban.hierarchy"))
             return
@@ -242,9 +238,7 @@ class Ban(commands.Cog):
         name="unban",
         description="Débannit un utilisateur par son ID.",
     )
-    @commands.guild_only()
-    @commands.has_permissions(ban_members=True)
-    @commands.bot_has_permissions(ban_members=True)
+    @checks.ban_perms()
     async def unban(
         self, ctx: commands.Context, utilisateur: str,
         *, raison: str | None = None,
