@@ -103,13 +103,17 @@ pathlib.Path("data/pending_deploy.json").write_text(
 )
 PY
 
-# Redémarre le service s'il existe, sinon prévient l'opérateur.
+# Redémarre le bot : service systemd si configuré, sinon process Python
+# autonome via watcher-ctl.sh (voir docs/DEPLOY.md), sinon message manuel.
 if command -v systemctl >/dev/null 2>&1 \
     && systemctl list-unit-files "${SERVICE}.service" >/dev/null 2>&1; then
     log "Redémarrage du service ${SERVICE}."
     sudo systemctl restart "$SERVICE"
+elif [ -x "${REPO_ROOT}/scripts/watcher-ctl.sh" ]; then
+    log "Redémarrage via watcher-ctl.sh (process Python autonome)."
+    "${REPO_ROOT}/scripts/watcher-ctl.sh" restart
 else
-    log "Service systemd '${SERVICE}' introuvable."
+    log "Aucun mécanisme de redémarrage détecté (ni systemd ni watcher-ctl.sh)."
     log "Redémarre le bot manuellement pour appliquer la mise à jour."
 fi
 
