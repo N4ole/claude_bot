@@ -120,6 +120,110 @@ _CATALOG: dict[str, dict[str, str]] = {
         "fr": "🔊 {user} n'est plus mute.",
         "en": "🔊 {user} is no longer muted.",
     },
+    # --- Modération vocale (mute micro / mute casque / move) ---
+    "voice.hierarchy": {
+        "fr": "⛔ Tu ne peux pas agir sur ce membre (hiérarchie des rôles).",
+        "en": "⛔ You can't act on this member (role hierarchy).",
+    },
+    "voice.not_connected": {
+        "fr": "❌ {user} n'est connecté à aucun salon vocal.",
+        "en": "❌ {user} is not connected to any voice channel.",
+    },
+    "voice.forbidden": {
+        "fr": "⛔ Action impossible (permissions ou hiérarchie).",
+        "en": "⛔ Action not possible (permissions or hierarchy).",
+    },
+    "voice.failed": {
+        "fr": "❌ Échec de l'action vocale : {error}",
+        "en": "❌ Voice action failed: {error}",
+    },
+    "voice.already_mic_muted": {
+        "fr": "⚠️ {user} a déjà le micro coupé.",
+        "en": "⚠️ {user} already has their microphone muted.",
+    },
+    "voice.mic_muted": {
+        "fr": "🎙️ {user} a le micro coupé (server mute).",
+        "en": "🎙️ {user}'s microphone has been muted (server mute).",
+    },
+    "voice.not_mic_muted": {
+        "fr": "⚠️ {user} n'a pas le micro coupé.",
+        "en": "⚠️ {user}'s microphone is not muted.",
+    },
+    "voice.mic_unmuted": {
+        "fr": "🎙️ {user} a de nouveau le micro.",
+        "en": "🎙️ {user} can speak again.",
+    },
+    "voice.already_deafened": {
+        "fr": "⚠️ {user} a déjà le casque coupé.",
+        "en": "⚠️ {user} is already deafened.",
+    },
+    "voice.deafened": {
+        "fr": "🎧 {user} a le casque coupé (server deafen).",
+        "en": "🎧 {user} has been deafened (server deafen).",
+    },
+    "voice.not_deafened": {
+        "fr": "⚠️ {user} n'a pas le casque coupé.",
+        "en": "⚠️ {user} is not deafened.",
+    },
+    "voice.undeafened": {
+        "fr": "🎧 {user} a de nouveau le son.",
+        "en": "🎧 {user} can hear again.",
+    },
+    "move.already_there": {
+        "fr": "⚠️ {user} est déjà dans {channel}.",
+        "en": "⚠️ {user} is already in {channel}.",
+    },
+    "move.done": {
+        "fr": "➡️ {user} a été déplacé vers {channel}.",
+        "en": "➡️ {user} has been moved to {channel}.",
+    },
+    # --- Notes de dossier ---
+    "note.empty": {
+        "fr": "❌ La note ne peut pas être vide.",
+        "en": "❌ The note cannot be empty.",
+    },
+    "note.too_long": {
+        "fr": "❌ Note trop longue (max {max} caractères).",
+        "en": "❌ Note too long (max {max} characters).",
+    },
+    "note.added": {
+        "fr": "🗒️ Note **#{index}** ajoutée au dossier de {user}.",
+        "en": "🗒️ Note **#{index}** added to {user}'s record.",
+    },
+    "note.bad_index": {
+        "fr": "❌ Numéro de note invalide pour {user}.",
+        "en": "❌ Invalid note number for {user}.",
+    },
+    "note.removed": {
+        "fr": "🗑️ Note **#{index}** retirée du dossier de {user}.",
+        "en": "🗑️ Note **#{index}** removed from {user}'s record.",
+    },
+    # --- Événements de modération hors commande (modevents) ---
+    "modev.unknown": {"fr": "inconnu", "en": "unknown"},
+    "modev.no_content": {"fr": "*(aucun texte)*", "en": "*(no text)*"},
+    "modev.f_author": {"fr": "Auteur", "en": "Author"},
+    "modev.f_member": {"fr": "Membre", "en": "Member"},
+    "modev.f_by": {"fr": "Par", "en": "By"},
+    "modev.f_channel": {"fr": "Salon", "en": "Channel"},
+    "modev.f_content": {"fr": "Contenu", "en": "Content"},
+    "modev.f_attachments": {"fr": "Pièces jointes", "en": "Attachments"},
+    "modev.f_reason": {"fr": "Raison", "en": "Reason"},
+    "modev.msg_del_title": {
+        "fr": "🗑️ Message supprimé (modération)",
+        "en": "🗑️ Message deleted (moderation)",
+    },
+    "modev.ban_title": {
+        "fr": "🔨 Bannissement (hors commande)",
+        "en": "🔨 Ban (outside command)",
+    },
+    "modev.unban_title": {
+        "fr": "♻️ Débannissement (hors commande)",
+        "en": "♻️ Unban (outside command)",
+    },
+    "modev.kick_title": {
+        "fr": "👢 Expulsion (hors commande)",
+        "en": "👢 Kick (outside command)",
+    },
     # --- Clear ---
     "clear.bad_number": {
         "fr": "❌ Indique un nombre supérieur à 0.",
@@ -172,6 +276,14 @@ _CATALOG: dict[str, dict[str, str]] = {
     "antibot.off": {
         "fr": "🤖 **Anti-bot désactivé**.",
         "en": "🤖 **Anti-bot disabled**.",
+    },
+    "antibot.log_title": {
+        "fr": "🤖 Bot expulsé (anti-bot)",
+        "en": "🤖 Bot kicked (anti-bot)",
+    },
+    "antibot.log_desc": {
+        "fr": "{user} a été automatiquement expulsé (anti-bot activé).",
+        "en": "{user} was automatically kicked (anti-bot enabled).",
     },
     # --- Anti-raid ---
     "antiraid.on": {
@@ -371,7 +483,17 @@ _CATALOG: dict[str, dict[str, str]] = {
     "us.warns_label": {"fr": "⚠️ Avertissements", "en": "⚠️ Warnings"},
     "us.mute_label": {"fr": "🔇 Mutes", "en": "🔇 Mutes"},
     "us.unmute_label": {"fr": "🔊 Unmutes", "en": "🔊 Unmutes"},
+    "us.kick_label": {"fr": "👢 Expulsions", "en": "👢 Kicks"},
+    "us.ban_label": {"fr": "🔨 Bannissements", "en": "🔨 Bans"},
+    "us.unban_label": {"fr": "♻️ Débannissements", "en": "♻️ Unbans"},
     "us.confine_label": {"fr": "🔒 Confinements", "en": "🔒 Confinements"},
+    "us.unconfine_label": {"fr": "🔓 Libérations", "en": "🔓 Releases"},
+    "us.vmute_label": {"fr": "🎙️ Mutes micro", "en": "🎙️ Mic mutes"},
+    "us.vunmute_label": {"fr": "🎙️ Unmutes micro", "en": "🎙️ Mic unmutes"},
+    "us.vdeafen_label": {"fr": "🎧 Mutes casque", "en": "🎧 Deafens"},
+    "us.vundeafen_label": {"fr": "🎧 Unmutes casque", "en": "🎧 Undeafens"},
+    "us.move_label": {"fr": "➡️ Déplacements", "en": "➡️ Moves"},
+    "us.notes": {"fr": "🗒️ Notes", "en": "🗒️ Notes"},
     "us.current": {"fr": "État actuel", "en": "Current status"},
     "us.warns_now": {"fr": "Avertissements actuels : **{count}/5**",
                      "en": "Current warnings: **{count}/5**"},
@@ -721,6 +843,12 @@ _CATALOG: dict[str, dict[str, str]] = {
                                "en": "Mention @everyone"},
     "dperm.view_audit_log": {"fr": "Voir les logs d'audit",
                              "en": "View Audit Log"},
+    "dperm.mute_members": {"fr": "Rendre muet des membres",
+                           "en": "Mute Members"},
+    "dperm.deafen_members": {"fr": "Rendre sourd des membres",
+                             "en": "Deafen Members"},
+    "dperm.move_members": {"fr": "Déplacer des membres",
+                           "en": "Move Members"},
     # Cas particulier (pas une permission Discord native).
     "perm.server_owner": {"fr": "Propriétaire du serveur", "en": "Server owner"},
     # Descriptions traduites des commandes (utilisées par le help).
@@ -777,6 +905,27 @@ _CATALOG: dict[str, dict[str, str]] = {
     "cmddesc.mute": {
         "fr": "Coupe la parole à un utilisateur pour une durée (ex: 5m, 1h30m).",
         "en": "Mute a user for a duration (e.g. 5m, 1h30m)."},
+    "cmddesc.mutemicro": {
+        "fr": "Coupe le micro d'un membre en vocal (server mute).",
+        "en": "Mute a member's microphone in voice (server mute)."},
+    "cmddesc.unmutemicro": {
+        "fr": "Rend le micro à un membre en vocal.",
+        "en": "Give a member's microphone back in voice."},
+    "cmddesc.mutecasque": {
+        "fr": "Coupe le son d'un membre en vocal (server deafen).",
+        "en": "Deafen a member in voice (server deafen)."},
+    "cmddesc.unmutecasque": {
+        "fr": "Rend le son à un membre en vocal.",
+        "en": "Undeafen a member in voice."},
+    "cmddesc.move": {
+        "fr": "Déplace un membre vers un autre salon vocal.",
+        "en": "Move a member to another voice channel."},
+    "cmddesc.note": {
+        "fr": "Ajoute une note au dossier d'un utilisateur (userstatus).",
+        "en": "Add a note to a user's record (userstatus)."},
+    "cmddesc.delnote": {
+        "fr": "Supprime une note du dossier d'un utilisateur (par numéro).",
+        "en": "Remove a note from a user's record (by number)."},
     "cmddesc.ping": {"fr": "Affiche la latence du bot.",
                      "en": "Show the bot latency."},
     "cmddesc.poll": {

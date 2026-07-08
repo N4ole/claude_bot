@@ -9,14 +9,21 @@
 - [`!ban`](../commands/ban.md) — Bannit un utilisateur (raison et durée optionnelle). — 🔒 *Bannir des membres*
 - [`!clear`](../commands/clear.md) — Supprime un nombre de messages du salon (max 100). — 🔒 *Gérer les messages*
 - [`!confine`](../commands/confine.md) — Isole un utilisateur dans un salon de confinement. — 🔒 *Administrateur*
+- [`!delnote`](../commands/delnote.md) — Supprime une note du dossier d'un utilisateur (par numéro). — 🔒 *Administrateur*
 - [`!kick`](../commands/kick.md) — Expulse un utilisateur du serveur (avec raison). — 🔒 *Expulser des membres*
 - [`!langue`](../commands/langue.md) — Choisit la langue du bot pour ce serveur (fr/en). — 🔒 *Administrateur*
 - [`!logs`](../commands/logs.md) — Active/désactive les logs Discord par type, ou `status`. — 🔒 *Administrateur*
+- [`!move`](../commands/move.md) — Déplace un membre vers un autre salon vocal. — 🔒 *Déplacer des membres*
 - [`!mute`](../commands/mute.md) — Coupe la parole à un utilisateur pour une durée (ex: 5m, 1h30m). — 🔒 *Administrateur*
+- [`!mutecasque`](../commands/mutecasque.md) — Coupe le son d'un membre en vocal (server deafen). — 🔒 *Rendre sourd des membres*
+- [`!mutemicro`](../commands/mutemicro.md) — Coupe le micro d'un membre en vocal (server mute). — 🔒 *Rendre muet des membres*
+- [`!note`](../commands/note.md) — Ajoute une note au dossier d'un utilisateur (userstatus). — 🔒 *Administrateur*
 - [`!protections`](../commands/protections.md) — Affiche l'état des protections du serveur. — 🔒 *Administrateur*
 - [`!unban`](../commands/unban.md) — Débannit un utilisateur par son ID. — 🔒 *Bannir des membres*
 - [`!unconfine`](../commands/unconfine.md) — Libère un utilisateur du confinement. — 🔒 *Administrateur*
 - [`!unmute`](../commands/unmute.md) — Rend la parole à un utilisateur mute. — 🔒 *Administrateur*
+- [`!unmutecasque`](../commands/unmutecasque.md) — Rend le son à un membre en vocal. — 🔒 *Rendre sourd des membres*
+- [`!unmutemicro`](../commands/unmutemicro.md) — Rend le micro à un membre en vocal. — 🔒 *Rendre muet des membres*
 - [`!unwarn`](../commands/unwarn.md) — Retire un avertissement à un utilisateur. — 🔒 *Administrateur*
 - [`!unwatch`](../commands/unwatch.md) — Arrête la surveillance d'un utilisateur. — 🔒 *Administrateur*
 - [`!userstatus`](../commands/userstatus.md) — Affiche l'historique des sanctions d'un utilisateur. — 🔒 *Administrateur*

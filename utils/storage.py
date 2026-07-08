@@ -40,6 +40,7 @@ _SETTINGS_PATH = _DATA / "guild_settings.json"
 _MODLOG_PATH = _DATA / "modlog.json"
 _REMINDERS_PATH = _DATA / "reminders.json"
 _TEMPBAN_PATH = _DATA / "tempbans.json"
+_NOTES_PATH = _DATA / "notes.json"
 _lock = Lock()
 _owners_lock = Lock()
 _warns_lock = Lock()
@@ -48,6 +49,7 @@ _reminders_lock = Lock()
 _settings_lock = Lock()
 _modlog_lock = Lock()
 _tempban_lock = Lock()
+_notes_lock = Lock()
 
 
 def _read() -> dict:
@@ -417,6 +419,65 @@ def get_guild_modlog(guild_id: int) -> list[dict]:
             result.append({**entry, "user_id": int(uid)})
     result.sort(key=lambda e: e.get("ts", 0))
     return result
+
+
+# --------------------------------------------------------------------------- #
+# Notes de dossier (notes.json = {guild_id: {user_id: [notes]}})
+#   note = {"ts", "moderator", "text"}
+# --------------------------------------------------------------------------- #
+def _read_notes() -> dict:
+    if not _NOTES_PATH.exists():
+        return {}
+    try:
+        with _NOTES_PATH.open("r", encoding="utf-8") as f:
+            return json.load(f)
+    except (json.JSONDecodeError, OSError):
+        return {}
+
+
+def _write_notes(data: dict) -> None:
+    _atomic_dump(_NOTES_PATH, data)
+
+
+def add_note(
+    guild_id: int, user_id: int, moderator_id: int, text: str
+) -> None:
+    """Ajoute une note libre au dossier d'un utilisateur (affichée par
+    `userstatus`)."""
+    from datetime import datetime, timezone
+
+    entry = {
+        "ts": datetime.now(timezone.utc).timestamp(),
+        "moderator": moderator_id,
+        "text": text,
+    }
+    with _notes_lock:
+        data = _read_notes()
+        data.setdefault(str(guild_id), {}).setdefault(
+            str(user_id), []
+        ).append(entry)
+        _write_notes(data)
+
+
+def get_notes(guild_id: int, user_id: int) -> list[dict]:
+    """Renvoie les notes de dossier d'un utilisateur (ordre d'ajout)."""
+    return _read_notes().get(str(guild_id), {}).get(str(user_id), [])
+
+
+def remove_note(guild_id: int, user_id: int, index: int) -> dict | None:
+    """Supprime la note d'indice `index` (0-based) et la renvoie, ou None."""
+    with _notes_lock:
+        data = _read_notes()
+        notes = data.get(str(guild_id), {}).get(str(user_id), [])
+        if not (0 <= index < len(notes)):
+            return None
+        removed = notes.pop(index)
+        if not notes:
+            data[str(guild_id)].pop(str(user_id), None)
+            if not data[str(guild_id)]:
+                data.pop(str(guild_id), None)
+        _write_notes(data)
+        return removed
 
 
 # --------------------------------------------------------------------------- #

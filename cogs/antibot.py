@@ -5,7 +5,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from utils import appchoices, checks, storage
+from utils import appchoices, checks, logchannels, storage
 from utils.i18n import t
 
 log = logging.getLogger(__name__)
@@ -48,6 +48,25 @@ class AntiBot(commands.Cog):
             log.info("Bot %s expulsé de %s (anti-bot)", member, member.guild.name)
         except discord.HTTPException:
             log.warning("Échec de l'expulsion du bot %s", member)
+            return
+        await self._log_kick(member)
+
+    async def _log_kick(self, member: discord.Member) -> None:
+        """Consigne l'expulsion anti-bot dans le salon de logs « mod »."""
+        channel = logchannels.log_channel(member.guild, "mod")
+        if channel is None:
+            return
+        embed = discord.Embed(
+            title=t(member.guild, "antibot.log_title"),
+            description=t(member.guild, "antibot.log_desc",
+                          user=f"{member} (`{member.id}`)"),
+            color=discord.Color.red(),
+            timestamp=discord.utils.utcnow(),
+        )
+        try:
+            await channel.send(embed=embed)
+        except discord.HTTPException:
+            pass
 
 
 async def setup(bot: commands.Bot) -> None:
