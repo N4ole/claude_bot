@@ -2,7 +2,7 @@
 import discord
 from discord.ext import commands
 
-from utils import checks, storage
+from utils import checks, embeds, storage
 from utils.i18n import t
 
 
@@ -24,31 +24,30 @@ class Move(commands.Cog):
         salon: discord.VoiceChannel,
     ) -> None:
         if not checks.can_act_on(ctx.author, member):
-            await ctx.send(t(ctx, "voice.hierarchy"))
+            await ctx.send(embed=embeds.error(t(ctx, "voice.hierarchy")))
             return
         if member.voice is None or member.voice.channel is None:
-            await ctx.send(t(ctx, "voice.not_connected", user=member.mention))
+            await ctx.send(embed=embeds.error(
+                t(ctx, "voice.not_connected", user=member.mention)))
             return
         if member.voice.channel.id == salon.id:
-            await ctx.send(
+            await ctx.send(embed=embeds.warn(
                 t(ctx, "move.already_there", user=member.mention,
-                  channel=salon.mention)
-            )
+                  channel=salon.mention)))
             return
         try:
             await member.move_to(salon, reason=f"Déplacé par {ctx.author}")
         except discord.Forbidden:
-            await ctx.send(t(ctx, "voice.forbidden"))
+            await ctx.send(embed=embeds.error(t(ctx, "voice.forbidden")))
             return
         except discord.HTTPException as exc:
-            await ctx.send(t(ctx, "voice.failed", error=exc))
+            await ctx.send(embed=embeds.error(t(ctx, "voice.failed", error=exc)))
             return
         storage.add_modlog(
             ctx.guild.id, member.id, "move", ctx.author.id, detail=salon.name
         )
-        await ctx.send(
-            t(ctx, "move.done", user=member.mention, channel=salon.mention)
-        )
+        await ctx.send(embed=embeds.success(
+            t(ctx, "move.done", user=member.mention, channel=salon.mention)))
 
 
 async def setup(bot: commands.Bot) -> None:

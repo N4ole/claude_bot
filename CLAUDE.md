@@ -18,9 +18,8 @@ dossier, automodération (anti-raid, anti-spam, anti-pub, anti-insulte,
 anti-caps/emoji, anti-bot), surveillance d'utilisateurs (`watch`), logs Discord
 par catégorie (dont la modération faite hors commande), messages de
 bienvenue/au revoir, giveaways, tickets, export du journal de modération, un
-**panel web** d'administration (OAuth2 Discord), une gestion d'**owners du
-bot** (dont blacklist de serveurs), et un système de **déploiement
-automatique** depuis GitHub.
+**panel web** d'administration (OAuth2 Discord) et une gestion d'**owners du
+bot** (dont blacklist de serveurs).
 
 - **Version actuelle : `0.20` — en bêta** (`config.VERSION` / `config.BETA`).
 - Commandes **hybrides** (préfixe **personnalisable par serveur** — commande
@@ -37,8 +36,6 @@ automatique** depuis GitHub.
 - **Persistance** : fichiers **JSON** par domaine (pas de base de données),
   un `Lock` par fichier, écritures **atomiques** (`os.replace`).
 - **Config** : `.env` via `python-dotenv` (`config.py`).
-- **Déploiement** : `scripts/deploy.sh` + unités systemd + installeur
-  (`scripts/install-autodeploy.sh`).
 - **Docs générées** : `scripts/gen_docs.py`.
 
 ## 3. Architecture
@@ -48,15 +45,15 @@ main.py            Point d'entrée : setup_logging() puis bot.run().
 bot.py             Classe Watcher(commands.Bot) : intents, chargement auto
                    des cogs, sync slash, on_error global. Statut Discord géré
                    par le cog `presence` (rotation).
-config.py          Env (.env) : TOKEN, PREFIX, OWNER_ID, GUILD_ID, REPO_URL,
+config.py          Env (.env) : TOKEN, PREFIX, OWNER_ID, GUILD_ID,
                    SUPPORT_SERVER, OAUTH_*, WEB_*, VERSION, BETA.
 cogs/              Un fichier = une commande (voir convention).
 cogs/owner/        Commandes réservées aux owners du bot (préfixe seul,
                    masquées du help public).
 utils/             Modules partagés (voir §5).
 web/               Panel aiohttp + OAuth2 + console live.
-scripts/           deploy.sh, install-autodeploy.sh, unités systemd, gen_docs.
-docs/              AUDIT.md, DEPLOY.md, OAUTH_SETUP.md + docs générées.
+scripts/           gen_docs.py (génération de la documentation).
+docs/              AUDIT.md, OAUTH_SETUP.md + docs générées.
 data/              JSON runtime (gitignored : data/*.json).
 logs/              Journaux fichiers (gitignored).
 ```
@@ -223,19 +220,7 @@ Les descriptions de commandes du help sont traduites via `cmddesc.<nom>`
   `actions.log` (logger `action`), `errors.log` (WARNING+).
 - Le logger nommé `action` est le fil des « actions » du bot.
 
-## 9. Déploiement automatique
-
-- `scripts/deploy.sh` — récupère la branche suivie, **remplace le code local
-  par GitHub** (`git reset --hard`, les fichiers gitignorés `data/`, `.env`,
-  `logs/` sont **préservés**), réinstalle les dépendances si
-  `requirements.txt` a changé, redémarre le service. Idempotent + verrou.
-- `scripts/install-autodeploy.sh` — installe le **lancement périodique** en
-  une commande (timer systemd par défaut, ou cron), chemins auto-détectés.
-- `scripts/watcher-deploy.{service,timer}` + `docs/DEPLOY.md`.
-> Résultat : chaque push GitHub se déploie tout seul (redémarrage uniquement
-> s'il y a de nouveaux commits).
-
-## 10. Décisions techniques
+## 9. Décisions techniques
 
 - **Commandes hybrides** pour le public (préfixe + slash d'un tenant) ;
   **owner en préfixe seul** (choix produit).
@@ -249,7 +234,7 @@ Les descriptions de commandes du help sont traduites via `cmddesc.<nom>`
 - **Durcissement web** (audit `docs/AUDIT.md`) : `state` OAuth, cookie
   `Secure`, échappement XSS, écoute locale par défaut.
 
-## 11. Workflow Git
+## 10. Workflow Git
 
 - Développement sur des **branches dédiées** ; **jamais** de push direct sur
   `main` sans autorisation. Après push, **PR** (draft, passée « ready » sur
@@ -270,17 +255,18 @@ automatiquement vers `Watcher`, fetch/push fonctionnent. Sur une machine
 locale (hors sandbox) : `git remote set-url origin
 https://github.com/N4ole/Watcher.git`.
 
-## 12. État actuel
+## 11. État actuel
 
 - Tronc complet et fusionné sur `main` : modération (dont kick/ban/unban,
-  ban par ID), automod, watch, logs Discord, panel web durci, i18n fr/en,
-  console colorée + logs fichiers, rapport d'erreurs, notifications owners
-  join/leave, déploiement auto.
+  ban par ID, modération vocale), automod, watch, logs Discord (dont hors
+  commande), bienvenue, giveaways, tickets, export, panel web durci, i18n
+  fr/en, console colorée + logs fichiers, rapport d'erreurs, notifications
+  owners join/leave, blacklist de serveurs.
 - **Version `0.20` (bêta)**, affichée dans `botinfo`, `status`, `central` et
   le statut Discord.
 - Le repo n'a **pas** de checks CI configurés.
 
-## 13. Prochaines étapes possibles
+## 12. Prochaines étapes possibles
 
 - Améliorations mineures issues de l'audit fonctionnel (`docs/AUDIT.md`) :
   repli générique dans les handlers d'erreur locaux, message i18n pour

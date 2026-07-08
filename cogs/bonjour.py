@@ -1,6 +1,7 @@
 """Commande bonjour : salue l'utilisateur."""
 from discord.ext import commands
 
+from utils import embeds
 from utils.i18n import t
 
 
@@ -15,7 +16,8 @@ class Bonjour(commands.Cog):
         description="Le bot vous dit bonjour.",
     )
     async def bonjour(self, ctx: commands.Context) -> None:
-        await ctx.send(t(ctx, "bonjour", user=ctx.author.mention))
+        await ctx.send(embed=embeds.success(
+            t(ctx, "bonjour", user=ctx.author.mention)))
 
 
 async def setup(bot: commands.Bot) -> None:

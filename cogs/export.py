@@ -17,7 +17,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from utils import checks, storage
+from utils import checks, embeds, storage
 from utils.duration import human, parse_duration
 from utils.i18n import t
 
@@ -114,12 +114,12 @@ class Export(commands.Cog):
     ) -> None:
         # Réservé aux owners du bot et au propriétaire du serveur.
         if not checks.is_owner_or_server_owner(ctx):
-            await ctx.send(t(ctx, "export.forbidden"))
+            await ctx.send(embed=embeds.error(t(ctx, "export.forbidden")))
             return
 
         fmt = format.lower().lstrip(".")
         if fmt not in _FORMATS:
-            await ctx.send(t(ctx, "export.bad_format"))
+            await ctx.send(embed=embeds.error(t(ctx, "export.bad_format")))
             return
 
         # Période : « all » = tout l'historique, sinon une durée (défaut 30j).
@@ -129,7 +129,7 @@ class Export(commands.Cog):
         else:
             delta = parse_duration(periode) if periode else timedelta(days=30)
             if delta is None:
-                await ctx.send(t(ctx, "export.bad_period"))
+                await ctx.send(embed=embeds.error(t(ctx, "export.bad_period")))
                 return
             since_ts = (datetime.now(timezone.utc) - delta).timestamp()
             period_label = human(delta)
@@ -139,7 +139,8 @@ class Export(commands.Cog):
             if e.get("ts", 0) >= since_ts
         ]
         if not entries:
-            await ctx.send(t(ctx, "export.no_data", period=period_label))
+            await ctx.send(embed=embeds.warn(
+                t(ctx, "export.no_data", period=period_label)))
             return
 
         rows = [_row(ctx.guild, e) for e in entries]
@@ -162,7 +163,8 @@ class Export(commands.Cog):
             ctx.guild.name, ctx.guild.id,
         )
         await ctx.send(
-            t(ctx, "export.done", count=len(rows), period=period_label),
+            embed=embeds.success(
+                t(ctx, "export.done", count=len(rows), period=period_label)),
             file=discord.File(io.BytesIO(data), filename=filename),
         )
 

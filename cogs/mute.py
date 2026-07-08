@@ -9,7 +9,7 @@ from datetime import timedelta
 import discord
 from discord.ext import commands
 
-from utils import checks, storage
+from utils import checks, embeds, storage
 from utils.duration import parse_duration
 from utils.i18n import t
 
@@ -33,19 +33,19 @@ class Mute(commands.Cog):
     ) -> None:
         delta = parse_duration(duree)
         if delta is None:
-            await ctx.send(t(ctx, "mute.bad_duration"))
+            await ctx.send(embed=embeds.error(t(ctx, "mute.bad_duration")))
             return
         if delta > MAX_TIMEOUT:
-            await ctx.send(t(ctx, "mute.too_long"))
+            await ctx.send(embed=embeds.error(t(ctx, "mute.too_long")))
             return
 
         try:
             await member.timeout(delta, reason=f"Mute par {ctx.author}")
         except discord.Forbidden:
-            await ctx.send(t(ctx, "mute.forbidden"))
+            await ctx.send(embed=embeds.error(t(ctx, "mute.forbidden")))
             return
         except discord.HTTPException as exc:
-            await ctx.send(t(ctx, "mute.failed", error=exc))
+            await ctx.send(embed=embeds.error(t(ctx, "mute.failed", error=exc)))
             return
 
         storage.add_modlog(
@@ -77,17 +77,19 @@ class Mute(commands.Cog):
     @checks.admin()
     async def unmute(self, ctx: commands.Context, member: discord.Member) -> None:
         if member.timed_out_until is None:
-            await ctx.send(t(ctx, "unmute.not_muted", user=member.mention))
+            await ctx.send(embed=embeds.warn(
+                t(ctx, "unmute.not_muted", user=member.mention)))
             return
 
         try:
             await member.timeout(None, reason=f"Unmute par {ctx.author}")
         except discord.HTTPException as exc:
-            await ctx.send(t(ctx, "unmute.failed", error=exc))
+            await ctx.send(embed=embeds.error(t(ctx, "unmute.failed", error=exc)))
             return
 
         storage.add_modlog(ctx.guild.id, member.id, "unmute", ctx.author.id)
-        await ctx.send(t(ctx, "unmute.done", user=member.mention))
+        await ctx.send(embed=embeds.success(
+            t(ctx, "unmute.done", user=member.mention)))
 
 
 async def setup(bot: commands.Bot) -> None:

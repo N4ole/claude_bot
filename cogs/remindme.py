@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 import discord
 from discord.ext import commands
 
-from utils import storage
+from utils import embeds, storage
 from utils.duration import human, parse_duration
 from utils.i18n import t
 
@@ -64,7 +64,7 @@ class RemindMe(commands.Cog):
     ) -> None:
         delta = parse_duration(temps)
         if delta is None:
-            await ctx.send(t(ctx, "remind.bad_duration"))
+            await ctx.send(embed=embeds.error(t(ctx, "remind.bad_duration")))
             return
 
         due = datetime.now(timezone.utc) + delta
@@ -72,18 +72,15 @@ class RemindMe(commands.Cog):
             ctx.author.id, ctx.channel.id, message, due.timestamp()
         )
         self.bot.loop.create_task(self._schedule(reminder))
-        await ctx.send(
+        await ctx.send(embed=embeds.success(
             t(ctx, "remind.set", duration=human(delta),
               when=discord.utils.format_dt(due, style="R"))
-        )
+        ))
 
     @remindme.error
     async def _error(self, ctx: commands.Context, error) -> None:
         if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send(
-                "❌ Usage : `remindme <message> <temps>` (ex: "
-                "`remindme \"boire de l'eau\" 2h`)."
-            )
+            await ctx.send(embed=embeds.error(t(ctx, "remind.usage")))
         else:
             # Repli : jamais d'erreur silencieuse pour l'utilisateur
             # (errorreport prévient déjà les owners avec la traceback).

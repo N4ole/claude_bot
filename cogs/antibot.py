@@ -5,7 +5,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from utils import appchoices, checks, logchannels, storage
+from utils import appchoices, checks, embeds, logchannels, storage
 from utils.i18n import t
 
 log = logging.getLogger(__name__)
@@ -30,12 +30,13 @@ class AntiBot(commands.Cog):
         value = etat.lower()
         if value in _ON:
             storage.set_setting(ctx.guild.id, "antibot", True)
-            await ctx.send(t(ctx, "antibot.on"))
+            await ctx.send(embed=embeds.success(t(ctx, "antibot.on")))
         elif value in _OFF:
             storage.set_setting(ctx.guild.id, "antibot", False)
-            await ctx.send(t(ctx, "antibot.off"))
+            await ctx.send(embed=embeds.info(t(ctx, "antibot.off")))
         else:
-            await ctx.send(t(ctx, "toggle.usage", name="antibot"))
+            await ctx.send(embed=embeds.error(
+                t(ctx, "toggle.usage", name="antibot")))
 
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member) -> None:

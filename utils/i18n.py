@@ -238,6 +238,12 @@ _CATALOG: dict[str, dict[str, str]] = {
         "fr": "❌ Durée invalide. Exemples : `30s`, `5m`, `2h`, `1d`, `1h30m`.",
         "en": "❌ Invalid duration. Examples: `30s`, `5m`, `2h`, `1d`, `1h30m`.",
     },
+    "remind.usage": {
+        "fr": "❌ Usage : `remindme <message> <temps>` "
+              "(ex : `remindme \"boire de l'eau\" 2h`).",
+        "en": "❌ Usage: `remindme <message> <time>` "
+              "(e.g. `remindme \"drink water\" 2h`).",
+    },
     "remind.set": {
         "fr": "✅ Je te le rappellerai en MP dans **{duration}** ({when}).",
         "en": "✅ I'll remind you in DM in **{duration}** ({when}).",
@@ -885,6 +891,13 @@ _CATALOG: dict[str, dict[str, str]] = {
     # --- CoinFlip ---
     "coin.heads": {"fr": "🪙 Pile", "en": "🪙 Heads"},
     "coin.tails": {"fr": "🪙 Face", "en": "🪙 Tails"},
+    "coin.title": {"fr": "🪙 Pile ou face", "en": "🪙 Coin flip"},
+    "roll.title": {"fr": "🎲 Lancer de dés", "en": "🎲 Dice roll"},
+    "8ball.title": {"fr": "🎱 Boule magique", "en": "🎱 Magic 8-ball"},
+    "8ball.question": {"fr": "Question", "en": "Question"},
+    "choose.title": {"fr": "🤔 Choix", "en": "🤔 Choice"},
+    "choose.options": {"fr": "Options", "en": "Options"},
+    "btn.reroll": {"fr": "🔁 Relancer", "en": "🔁 Reroll"},
     # --- Owner : manage ---
     "own.already": {"fr": "⚠️ {user} est déjà owner.",
                     "en": "⚠️ {user} is already an owner."},
@@ -1006,6 +1019,13 @@ _CATALOG: dict[str, dict[str, str]] = {
                        "en": "Command: {prefix}{name}"},
     "help.no_desc": {"fr": "Pas de description.", "en": "No description."},
     "help.usage": {"fr": "Usage", "en": "Usage"},
+    "help.arguments": {"fr": "Arguments", "en": "Arguments"},
+    "help.arg_required": {"fr": "• `{name}` — **obligatoire**",
+                          "en": "• `{name}` — **required**"},
+    "help.arg_optional": {"fr": "• `{name}` — facultatif",
+                          "en": "• `{name}` — optional"},
+    "help.arg_default": {"fr": "• `{name}` — facultatif (défaut : `{default}`)",
+                         "en": "• `{name}` — optional (default: `{default}`)"},
     "help.category": {"fr": "Catégorie", "en": "Category"},
     "help.permission": {"fr": "Permission", "en": "Permission"},
     "help.perm_none": {"fr": "Aucune", "en": "None"},

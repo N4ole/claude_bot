@@ -2,7 +2,7 @@
 from discord import app_commands
 from discord.ext import commands
 
-from utils import appchoices, checks, storage
+from utils import appchoices, checks, embeds, storage
 from utils.i18n import LANGS, t
 
 _ALIASES = {
@@ -27,17 +27,17 @@ class Langue(commands.Cog):
         self, ctx: commands.Context, langue: str | None = None
     ) -> None:
         if langue is None:
-            await ctx.send(t(ctx, "lang.current"))
+            await ctx.send(embed=embeds.info(t(ctx, "lang.current")))
             return
 
         chosen = _ALIASES.get(langue.lower())
         if chosen not in LANGS:
-            await ctx.send(t(ctx, "lang.invalid"))
+            await ctx.send(embed=embeds.error(t(ctx, "lang.invalid")))
             return
 
         storage.set_setting(ctx.guild.id, "lang", chosen)
         # Le message de confirmation est déjà dans la nouvelle langue.
-        await ctx.send(t(ctx, "lang.set"))
+        await ctx.send(embed=embeds.success(t(ctx, "lang.set")))
 
 
 async def setup(bot: commands.Bot) -> None:

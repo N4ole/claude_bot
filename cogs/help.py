@@ -108,6 +108,19 @@ class Help(commands.Cog):
             return True
         return bool(command.module and command.module.startswith("cogs.owner"))
 
+    def _arguments(self, ctx, command: commands.Command) -> str:
+        """Liste les arguments d'une commande (obligatoire/optionnel + défaut)."""
+        lines = []
+        for name, param in command.clean_params.items():
+            if param.required:
+                lines.append(t(ctx, "help.arg_required", name=name))
+            elif param.default not in (None, param.empty, ""):
+                lines.append(t(ctx, "help.arg_default", name=name,
+                               default=param.default))
+            else:
+                lines.append(t(ctx, "help.arg_optional", name=name))
+        return "\n".join(lines)
+
     def _command_detail(self, ctx, command: commands.Command) -> discord.Embed:
         cat_key, perm_key = self._category_of(command)
         embed = discord.Embed(
@@ -122,6 +135,10 @@ class Help(commands.Cog):
             usage += f" {signature}"
         embed.add_field(name=t(ctx, "help.usage"), value=f"`{usage}`",
                         inline=False)
+        args = self._arguments(ctx, command)
+        if args:
+            embed.add_field(name=t(ctx, "help.arguments"), value=args,
+                            inline=False)
         embed.add_field(name=t(ctx, "help.category"), value=t(ctx, cat_key),
                         inline=True)
         embed.add_field(

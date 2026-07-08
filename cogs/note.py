@@ -6,7 +6,7 @@ contexte qui n'est pas une sanction (ex. « déjà prévenu en MP », « ami de 
 import discord
 from discord.ext import commands
 
-from utils import checks, storage
+from utils import checks, embeds, storage
 from utils.i18n import t
 
 # Longueur maximale d'une note (pour rester lisible dans l'embed userstatus).
@@ -29,14 +29,16 @@ class Note(commands.Cog):
     ) -> None:
         texte = texte.strip()
         if not texte:
-            await ctx.send(t(ctx, "note.empty"))
+            await ctx.send(embed=embeds.error(t(ctx, "note.empty")))
             return
         if len(texte) > MAX_NOTE_LEN:
-            await ctx.send(t(ctx, "note.too_long", max=MAX_NOTE_LEN))
+            await ctx.send(embed=embeds.error(
+                t(ctx, "note.too_long", max=MAX_NOTE_LEN)))
             return
         storage.add_note(ctx.guild.id, member.id, ctx.author.id, texte)
         count = len(storage.get_notes(ctx.guild.id, member.id))
-        await ctx.send(t(ctx, "note.added", user=member.mention, index=count))
+        await ctx.send(embed=embeds.success(
+            t(ctx, "note.added", user=member.mention, index=count)))
 
     @commands.hybrid_command(
         name="delnote",
@@ -49,9 +51,11 @@ class Note(commands.Cog):
         # Les notes sont numérotées à partir de 1 côté utilisateur.
         removed = storage.remove_note(ctx.guild.id, member.id, numero - 1)
         if removed is None:
-            await ctx.send(t(ctx, "note.bad_index", user=member.mention))
+            await ctx.send(embed=embeds.error(
+                t(ctx, "note.bad_index", user=member.mention)))
             return
-        await ctx.send(t(ctx, "note.removed", user=member.mention, index=numero))
+        await ctx.send(embed=embeds.success(
+            t(ctx, "note.removed", user=member.mention, index=numero)))
 
 
 async def setup(bot: commands.Bot) -> None:

@@ -16,10 +16,6 @@ data/*.json
 *.log
 logs/
 
-# watcher-ctl.sh (process Python autonome, sans systemd)
-.watcher.pid
-.watcher.pid.stop
-
 # IDE
 .vscode/
 .idea/

@@ -3,6 +3,7 @@ import random
 
 from discord.ext import commands
 
+from utils import embeds
 from utils.i18n import t
 
 
@@ -19,9 +20,15 @@ class Choose(commands.Cog):
     async def choose(self, ctx: commands.Context, *, options: str) -> None:
         choices = [o.strip() for o in options.split("|") if o.strip()]
         if len(choices) < 2:
-            await ctx.send(t(ctx, "choose.need"))
+            await ctx.send(embed=embeds.error(t(ctx, "choose.need")))
             return
-        await ctx.send(t(ctx, "choose.result", choice=random.choice(choices)))
+        embed = embeds.fun(t(ctx, "choose.result", choice=random.choice(choices)),
+                           title=t(ctx, "choose.title"))
+        embed.add_field(
+            name=t(ctx, "choose.options"),
+            value=", ".join(f"`{c}`" for c in choices)[:1024], inline=False,
+        )
+        await ctx.send(embed=embed)
 
 
 async def setup(bot: commands.Bot) -> None:

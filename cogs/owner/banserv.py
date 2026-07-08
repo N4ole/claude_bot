@@ -11,7 +11,7 @@ import discord
 from discord.ext import commands
 
 import config
-from utils import checks, storage
+from utils import checks, embeds, storage
 from utils.i18n import t
 
 log = logging.getLogger("action")
@@ -102,18 +102,19 @@ class BanServ(commands.Cog):
     @checks.is_owner()
     async def banserv(self, ctx: commands.Context, guild_id: str) -> None:
         if not guild_id.isdigit():
-            await ctx.send(t(ctx, "banserv.bad_id"))
+            await ctx.send(embed=embeds.error(t(ctx, "banserv.bad_id")))
             return
         gid = int(guild_id)
         if not storage.add_blacklisted_guild(gid):
-            await ctx.send(t(ctx, "banserv.already", id=gid))
+            await ctx.send(embed=embeds.warn(t(ctx, "banserv.already", id=gid)))
             return
-        await ctx.send(t(ctx, "banserv.added", id=gid))
+        await ctx.send(embed=embeds.success(t(ctx, "banserv.added", id=gid)))
         # Si le bot est actuellement sur ce serveur, on l'applique tout de suite.
         guild = self.bot.get_guild(gid)
         if guild is not None:
             await self._enforce(guild, on_join=False)
-            await ctx.send(t(ctx, "banserv.left", name=guild.name))
+            await ctx.send(embed=embeds.info(
+                t(ctx, "banserv.left", name=guild.name)))
 
     @commands.command(
         name="unbanserv",
@@ -122,12 +123,14 @@ class BanServ(commands.Cog):
     @checks.is_owner()
     async def unbanserv(self, ctx: commands.Context, guild_id: str) -> None:
         if not guild_id.isdigit():
-            await ctx.send(t(ctx, "banserv.bad_id"))
+            await ctx.send(embed=embeds.error(t(ctx, "banserv.bad_id")))
             return
         if storage.remove_blacklisted_guild(int(guild_id)):
-            await ctx.send(t(ctx, "banserv.removed", id=guild_id))
+            await ctx.send(embed=embeds.success(
+                t(ctx, "banserv.removed", id=guild_id)))
         else:
-            await ctx.send(t(ctx, "banserv.not_listed", id=guild_id))
+            await ctx.send(embed=embeds.warn(
+                t(ctx, "banserv.not_listed", id=guild_id)))
 
     @commands.command(
         name="banservs",
@@ -137,21 +140,22 @@ class BanServ(commands.Cog):
     async def banservs(self, ctx: commands.Context) -> None:
         listed = storage.get_blacklisted_guilds()
         if not listed:
-            await ctx.send(t(ctx, "banserv.list_empty"))
+            await ctx.send(embed=embeds.info(t(ctx, "banserv.list_empty")))
             return
         lines = "\n".join(f"• `{gid}`" for gid in listed)
-        await ctx.send(t(ctx, "banserv.list", count=len(listed), ids=lines))
+        await ctx.send(embed=embeds.info(
+            t(ctx, "banserv.list", count=len(listed), ids=lines)))
 
     @banserv.error
     @unbanserv.error
     @banservs.error
     async def _error(self, ctx: commands.Context, error) -> None:
         if isinstance(error, commands.CheckFailure):
-            await ctx.send(t(ctx, "error.owner_only"))
+            await ctx.send(embed=embeds.error(t(ctx, "error.owner_only")))
         elif isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send(t(ctx, "banserv.usage"))
+            await ctx.send(embed=embeds.error(t(ctx, "banserv.usage")))
         else:
-            await ctx.send(t(ctx, "error.generic"))
+            await ctx.send(embed=embeds.error(t(ctx, "error.generic")))
 
 
 async def setup(bot: commands.Bot) -> None:
