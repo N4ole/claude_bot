@@ -182,6 +182,11 @@ class Confine(commands.Cog):
     )
     @checks.admin()
     async def confine(self, ctx: commands.Context, member: discord.Member) -> None:
+        # Le confinement enchaîne de nombreux appels API (permissions sur
+        # chaque catégorie/salon) : sans defer, l'interaction slash expire au
+        # bout de 3 s et Discord affiche une erreur alors que l'action a bien
+        # eu lieu. On acquitte donc l'interaction immédiatement.
+        await ctx.defer()
         channel = await self.apply_confinement(ctx.guild, member)
         if channel is None:
             await ctx.send(t(ctx, "confine.already", user=member.mention))
@@ -197,7 +202,13 @@ class Confine(commands.Cog):
     )
     @checks.admin()
     async def unconfine(self, ctx: commands.Context, member: discord.Member) -> None:
-        await self.remove_confinement(ctx.guild, member)
+        # Idem `confine` : la levée du confinement retire les overwrites sur
+        # chaque catégorie/salon — on acquitte l'interaction avant (voir defer
+        # plus haut) pour ne pas afficher d'erreur d'expiration.
+        await ctx.defer()
+        removed = await self.remove_confinement(ctx.guild, member)
+        if removed:
+            storage.add_modlog(ctx.guild.id, member.id, "unconfine", ctx.author.id)
         await ctx.send(t(ctx, "unconfine.done", user=member.mention))
 
 

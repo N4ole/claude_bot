@@ -9,6 +9,9 @@ Décorateurs de commandes :
     @checks.kick_perms()       serveur + Expulser (utilisateur ET bot)
     @checks.ban_perms()        serveur + Bannir (utilisateur ET bot)
     @checks.manage_messages()  serveur + Gérer les messages
+    @checks.mute_voice_perms() serveur + Rendre muet des membres (vocal)
+    @checks.deafen_voice_perms() serveur + Rendre sourd des membres (vocal)
+    @checks.move_perms()       serveur + Déplacer des membres (vocal)
     @checks.server_owner()     serveur + propriétaire du serveur Discord
     @checks.is_owner()         owners du bot (préfixe/MP inclus)
 
@@ -109,6 +112,33 @@ def manage_messages():
     return _compose(
         commands.guild_only(),
         commands.has_permissions(manage_messages=True),
+    )
+
+
+def mute_voice_perms():
+    """Serveur + « Rendre muet des membres » (utilisateur ET bot)."""
+    return _compose(
+        commands.guild_only(),
+        commands.has_permissions(mute_members=True),
+        commands.bot_has_permissions(mute_members=True),
+    )
+
+
+def deafen_voice_perms():
+    """Serveur + « Rendre sourd des membres » (utilisateur ET bot)."""
+    return _compose(
+        commands.guild_only(),
+        commands.has_permissions(deafen_members=True),
+        commands.bot_has_permissions(deafen_members=True),
+    )
+
+
+def move_perms():
+    """Serveur + « Déplacer des membres » vocalement (utilisateur ET bot)."""
+    return _compose(
+        commands.guild_only(),
+        commands.has_permissions(move_members=True),
+        commands.bot_has_permissions(move_members=True),
     )
 
 

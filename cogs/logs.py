@@ -13,13 +13,13 @@ from discord import app_commands
 from discord.ext import commands
 
 import config
-from utils import appchoices, categories, checks, storage
+from utils import appchoices, categories, checks, logchannels, storage
 from utils.i18n import t
 
 log = logging.getLogger("action")
 
-CATEGORY_NAME = "logs"
-SETTING = "logtypes"  # {token: channel_id}
+CATEGORY_NAME = logchannels.CATEGORY_NAME  # "logs" (source unique)
+SETTING = logchannels.SETTING  # {token: channel_id} (source unique)
 
 _ON = {"on", "activer", "enable", "true", "1"}
 _OFF = {"off", "désactiver", "desactiver", "disable", "false", "0"}
@@ -210,12 +210,7 @@ class Logs(commands.Cog):
         token = categories.CAT_TO_TYPE.get(cat_key)
         if token is None:
             return None
-        channel_id = self._enabled(guild.id).get(token)
-        if not channel_id:
-            return None
-        # Salon éventuellement supprimé : get_channel renvoie alors None.
-        channel = guild.get_channel(channel_id)
-        return channel if hasattr(channel, "send") else None
+        return logchannels.log_channel(guild, token)
 
     @commands.Cog.listener()
     async def on_command_completion(self, ctx: commands.Context) -> None:

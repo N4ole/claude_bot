@@ -11,7 +11,16 @@ _LABEL_KEYS = {
     "warn": "us.warns_label",
     "mute": "us.mute_label",
     "unmute": "us.unmute_label",
+    "kick": "us.kick_label",
+    "ban": "us.ban_label",
+    "unban": "us.unban_label",
     "confine": "us.confine_label",
+    "unconfine": "us.unconfine_label",
+    "vmute": "us.vmute_label",
+    "vunmute": "us.vunmute_label",
+    "vdeafen": "us.vdeafen_label",
+    "vundeafen": "us.vundeafen_label",
+    "move": "us.move_label",
 }
 
 
@@ -119,6 +128,25 @@ class UserStatus(commands.Cog):
             embed.add_field(
                 name=t(ctx, "us.recent"), value="\n".join(lines), inline=False
             )
+
+        # Notes de dossier (libres, ajoutées via la commande `note`).
+        notes = storage.get_notes(ctx.guild.id, member.id)
+        if notes:
+            note_lines = []
+            for i, note in enumerate(notes, start=1):
+                ts = discord.utils.format_dt(
+                    datetime.fromtimestamp(note["ts"], tz=timezone.utc),
+                    style="d",
+                )
+                mod = (
+                    f" — <@{note['moderator']}>" if note.get("moderator") else ""
+                )
+                note_lines.append(f"**{i}.** {note['text']} ({ts}{mod})")
+            # L'embed limite un champ à 1024 caractères : on tronque au besoin.
+            value = "\n".join(note_lines)
+            if len(value) > 1024:
+                value = value[:1013] + "\n…"
+            embed.add_field(name=t(ctx, "us.notes"), value=value, inline=False)
 
         await ctx.send(embed=embed)
 
