@@ -3,6 +3,8 @@
 Quand l'anti-raid est activé, chaque nouveau membre reçoit un rôle
 « Non vérifié » qui masque le serveur, et doit recopier un code (captcha
 simple, sans API externe) dans le salon de vérification pour y accéder.
+Une fois le captcha validé, le membre perd « Non vérifié » et reçoit le rôle
+« Membre ».
 """
 import asyncio
 import logging
@@ -19,6 +21,7 @@ from utils.i18n import t
 log = logging.getLogger(__name__)
 
 ROLE_NAME = "Non vérifié"
+MEMBER_ROLE_NAME = "Membre"
 CHANNEL_NAME = "vérification"
 CAPTCHA_TIMEOUT = 300  # secondes
 MAX_ATTEMPTS = 3
@@ -39,6 +42,17 @@ class AntiRaid(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
+    async def _ensure_member_role(self, guild: discord.Guild) -> discord.Role:
+        """Crée/récupère le rôle « Membre » attribué après validation du captcha."""
+        role = discord.utils.get(guild.roles, name=MEMBER_ROLE_NAME)
+        if role is None:
+            role = await guild.create_role(
+                name=MEMBER_ROLE_NAME,
+                permissions=discord.Permissions.none(),
+                reason="Anti-raid : rôle membre",
+            )
+        return role
+
     async def _ensure_setup(
         self, guild: discord.Guild
     ) -> tuple[discord.Role, discord.TextChannel]:
@@ -50,6 +64,10 @@ class AntiRaid(commands.Cog):
                 permissions=discord.Permissions.none(),
                 reason="Anti-raid",
             )
+
+        # Rôle « Membre » attribué à la validation du captcha (créé dès
+        # l'activation pour être prêt et bien placé dans la hiérarchie).
+        await self._ensure_member_role(guild)
 
         # Le rôle « Non vérifié » ne voit aucune catégorie...
         deny = discord.PermissionOverwrite(view_channel=False)
@@ -133,13 +151,20 @@ class AntiRaid(commands.Cog):
                 break
             if msg.content.strip().upper() == code:
                 try:
+                    member_role = await self._ensure_member_role(guild)
                     await member.remove_roles(role, reason="Captcha validé")
+                    await member.add_roles(
+                        member_role, reason="Captcha validé : rôle membre"
+                    )
                     await channel.send(
-                        t(guild, "antiraid.verified", user=member.mention)
+                        t(guild, "antiraid.verified", user=member.mention,
+                          role=member_role.name)
                     )
                     log.info(
-                        "Anti-raid — %s (%s) a validé le captcha sur %s (%s)",
+                        "Anti-raid — %s (%s) a validé le captcha sur %s (%s) "
+                        "— rôle « %s » attribué",
                         member, member.id, guild.name, guild.id,
+                        member_role.name,
                     )
                 except discord.HTTPException:
                     pass

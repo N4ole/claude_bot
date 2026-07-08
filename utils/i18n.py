@@ -509,8 +509,8 @@ _CATALOG: dict[str, dict[str, str]] = {
               "**`{code}`**\n(you have {minutes} minutes and {attempts} tries).",
     },
     "antiraid.verified": {
-        "fr": "✅ {user} vérifié, bienvenue !",
-        "en": "✅ {user} verified, welcome!",
+        "fr": "✅ {user} vérifié, bienvenue ! Tu as reçu le rôle **{role}**.",
+        "en": "✅ {user} verified, welcome! You received the **{role}** role.",
     },
     "antiraid.wrong": {
         "fr": "❌ {user} code incorrect, réessaie.",
