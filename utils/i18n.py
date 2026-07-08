@@ -251,6 +251,53 @@ _CATALOG: dict[str, dict[str, str]] = {
         "fr": "❌ Utilise `{name} on` ou `{name} off`.",
         "en": "❌ Use `{name} on` or `{name} off`.",
     },
+    # --- Tickets ---
+    "ticket.panel_footer": {
+        "fr": "Clique sur le bouton pour ouvrir un ticket.",
+        "en": "Click the button to open a ticket.",
+    },
+    "ticket.panel_posted": {
+        "fr": "🎫 Panneau de ticket créé dans {channel}.",
+        "en": "🎫 Ticket panel created in {channel}.",
+    },
+    "ticket.panel_forbidden": {
+        "fr": "⛔ Je ne peux pas écrire dans {channel}.",
+        "en": "⛔ I can't post in {channel}.",
+    },
+    "ticket.already_open": {
+        "fr": "⚠️ Tu as déjà un ticket ouvert : {channel}.",
+        "en": "⚠️ You already have an open ticket: {channel}.",
+    },
+    "ticket.bot_no_perm": {
+        "fr": "⛔ Il me manque la permission « Gérer les salons » pour créer "
+              "le ticket.",
+        "en": "⛔ I'm missing the “Manage Channels” permission to create the "
+              "ticket.",
+    },
+    "ticket.create_failed": {
+        "fr": "❌ Impossible de créer le salon de ticket.",
+        "en": "❌ Could not create the ticket channel.",
+    },
+    "ticket.created": {
+        "fr": "✅ Ton ticket a été créé : {channel}.",
+        "en": "✅ Your ticket has been created: {channel}.",
+    },
+    "ticket.welcome": {
+        "fr": "🎫 {user} bienvenue dans ton ticket ! Décris ta demande, un "
+              "administrateur va te répondre.\nFerme le ticket avec "
+              "`{prefix}closeticket`.",
+        "en": "🎫 {user} welcome to your ticket! Describe your request, an "
+              "administrator will reply.\nClose the ticket with "
+              "`{prefix}closeticket`.",
+    },
+    "ticket.not_a_ticket": {
+        "fr": "❌ Cette commande s'utilise dans un salon de ticket.",
+        "en": "❌ This command can only be used in a ticket channel.",
+    },
+    "ticket.closed": {
+        "fr": "🔒 Ticket fermé par {user}. Le membre n'a plus accès à ce salon.",
+        "en": "🔒 Ticket closed by {user}. The member no longer has access here.",
+    },
     # --- Bienvenue / au revoir ---
     "welcome.default_join": {
         "fr": "👋 Bienvenue {user} sur **{server}** ! Tu es le membre n°{count}.",
@@ -1031,6 +1078,12 @@ _CATALOG: dict[str, dict[str, str]] = {
                          "en": "Enable/disable anti-spam (on/off)."},
     "cmddesc.avatar": {"fr": "Affiche l'avatar d'un utilisateur.",
                        "en": "Show a user's avatar."},
+    "cmddesc.ticket": {
+        "fr": "Crée un panneau de ticket (bouton) dans un salon.",
+        "en": "Create a ticket panel (button) in a channel."},
+    "cmddesc.closeticket": {
+        "fr": "Ferme le ticket courant et en retire le membre.",
+        "en": "Close the current ticket and remove the member."},
     "cmddesc.bienvenue": {
         "fr": "Configure les messages de bienvenue/au revoir (et le MP).",
         "en": "Configure welcome/goodbye messages (and the welcome DM)."},

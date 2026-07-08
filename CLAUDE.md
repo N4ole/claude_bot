@@ -90,6 +90,12 @@ ensemble (`mute`/`unmute`, `ban`/`unban`, `confine`/`unconfine`,
 - **Giveaways** (`giveaway`, admin) : `giveaway <durée> <gagnants> <prix>`
   (réaction 🎉), `gend` (fin anticipée), `greroll` (nouveau tirage). Persistés
   (`giveaways.json`) et repris au démarrage (`on_ready`).
+- **Tickets** (`ticket`, admin) : `ticket <salon> <message>` poste un panneau
+  avec un **bouton persistant** (`discord.ui.View`, `custom_id` stable,
+  ré-enregistré via `bot.add_view` au chargement du cog). Un clic crée un
+  salon privé `ticket-<n°>` (catégorie `tickets`, visible du membre + admins) ;
+  numérotation via `storage.next_ticket_number`. `closeticket` retire l'accès
+  du membre et renomme le salon `closed-<n°>`.
 - **Owners du bot** (`cogs/owner/`, **préfixe uniquement**) :
   `addowner`/`rmowner`/`owners` (manage), `serveurs`, `invite`, `respond`
   (MP à un propriétaire de serveur, ou `all` pour une annonce), `helpowner`,

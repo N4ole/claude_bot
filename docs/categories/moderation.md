@@ -9,6 +9,7 @@
 - [`!ban`](../commands/ban.md) — Bannit un utilisateur (raison et durée optionnelle). — 🔒 *Bannir des membres*
 - [`!bienvenue`](../commands/bienvenue.md) — Configure les messages de bienvenue/au revoir. — 🔒 *Administrateur*
 - [`!clear`](../commands/clear.md) — Supprime un nombre de messages du salon (max 100). — 🔒 *Gérer les messages*
+- [`!closeticket`](../commands/closeticket.md) — Ferme le ticket courant et en retire le membre. — 🔒 *Administrateur*
 - [`!confine`](../commands/confine.md) — Isole un utilisateur dans un salon de confinement. — 🔒 *Administrateur*
 - [`!delnote`](../commands/delnote.md) — Supprime une note du dossier d'un utilisateur (par numéro). — 🔒 *Administrateur*
 - [`!kick`](../commands/kick.md) — Expulse un utilisateur du serveur (avec raison). — 🔒 *Expulser des membres*
@@ -20,6 +21,7 @@
 - [`!mutemicro`](../commands/mutemicro.md) — Coupe le micro d'un membre en vocal (server mute). — 🔒 *Rendre muet des membres*
 - [`!note`](../commands/note.md) — Ajoute une note au dossier d'un utilisateur (userstatus). — 🔒 *Administrateur*
 - [`!protections`](../commands/protections.md) — Affiche l'état des protections du serveur. — 🔒 *Administrateur*
+- [`!ticket`](../commands/ticket.md) — Crée un panneau de ticket (bouton) dans un salon. — 🔒 *Administrateur*
 - [`!unban`](../commands/unban.md) — Débannit un utilisateur par son ID. — 🔒 *Bannir des membres*
 - [`!unconfine`](../commands/unconfine.md) — Libère un utilisateur du confinement. — 🔒 *Administrateur*
 - [`!unmute`](../commands/unmute.md) — Rend la parole à un utilisateur mute. — 🔒 *Administrateur*

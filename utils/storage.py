@@ -349,6 +349,21 @@ def set_setting(guild_id: int, key: str, value) -> None:
         _write_settings(data)
 
 
+def next_ticket_number(guild_id: int) -> int:
+    """Incrémente et renvoie le prochain numéro de ticket du serveur.
+
+    Compteur monotone persisté par serveur (réglage `ticket_counter`) :
+    l'incrément est atomique (verrou des réglages).
+    """
+    with _settings_lock:
+        data = _read_settings()
+        guild = data.setdefault(str(guild_id), {})
+        number = int(guild.get("ticket_counter", 0)) + 1
+        guild["ticket_counter"] = number
+        _write_settings(data)
+        return number
+
+
 def get_prefix(guild_id: int | None) -> str:
     """Préfixe des commandes pour un serveur (réglage `prefix`, persisté).
 

@@ -42,6 +42,7 @@ CATEGORIES: dict[str, tuple[str, str | None]] = {
     "AntiInsulte": ("cat.mod", "dperm.administrator"),
     "Protections": ("cat.mod", "dperm.administrator"),
     "UserStatus": ("cat.mod", "dperm.administrator"),
+    "Ticket": ("cat.mod", "dperm.administrator"),
     "Analyse": ("cat.mod", "dperm.administrator"),
     "Langue": ("cat.mod", "dperm.administrator"),
     "Logs": ("cat.mod", "dperm.administrator"),
