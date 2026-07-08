@@ -32,7 +32,6 @@ multi-fichiers (un fichier par commande).
 - **Panel web** d'administration (OAuth2 Discord, thème néon, console live).
 - **Owners du bot** : gestion des owners, tableau de bord, blacklist de
   serveurs, quitter un serveur à distance…
-- **Déploiement automatique** depuis GitHub (`scripts/deploy.sh`).
 
 ## Structure
 
@@ -55,7 +54,7 @@ Watcher/
 │   ├── analytics.py     # Séries temporelles (commande analyse)
 │   └── logsetup.py      # Console colorée + fichiers de logs
 ├── web/             # Panel web (aiohttp + OAuth2 Discord)
-├── scripts/         # deploy.sh, install-autodeploy.sh, unités systemd, gen_docs
+├── scripts/         # gen_docs.py (génération de la documentation)
 ├── docs/            # Documentation (guides + docs générées)
 ├── data/            # Données runtime (JSON, ignoré par git)
 └── cogs/            # Un fichier par commande / fonctionnalité
@@ -113,7 +112,6 @@ python main.py
 | `COMMAND_PREFIX`  | Préfixe **par défaut** (chaque serveur peut le changer)          | `!`    |
 | `GUILD_ID`        | ID d'un serveur pour synchroniser les slash instantanément (dev) | global |
 | `OWNER_ID`        | ID Discord de l'owner principal du bot                           | —      |
-| `REPO_URL`        | Dépôt GitHub (liens de PR dans les notifications de mise à jour)  | Watcher|
 | `SUPPORT_SERVER`  | Invitation du serveur de support (MP de blacklist `banserv`)      | —      |
 | `OAUTH_*`, `WEB_*`| Panel web (voir plus bas)                                        | —      |
 
@@ -269,18 +267,6 @@ graphiques (serveurs, membres, utilisation par serveur).
   Discord).
 
 👉 Guide pas à pas : [`docs/OAUTH_SETUP.md`](docs/OAUTH_SETUP.md).
-
-## Déploiement automatique
-
-`scripts/deploy.sh` déploie chaque push GitHub : il récupère la branche suivie,
-remplace le code local (`git reset --hard`, en **préservant** `data/`, `.env`,
-`logs/`), réinstalle les dépendances si besoin, puis redémarre le bot —
-via **systemd** si un service est configuré, sinon via
-[`scripts/watcher-ctl.sh`](scripts/watcher-ctl.sh) (process Python autonome
-avec relance auto). `scripts/install-autodeploy.sh` installe le lancement
-périodique (timer systemd ou cron) en une commande.
-
-👉 Guide complet : [`docs/DEPLOY.md`](docs/DEPLOY.md).
 
 ## Owners du bot & notifications
 

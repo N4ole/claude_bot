@@ -1,8 +1,8 @@
 # Audit de fonctionnalité — Watcher
 
 Audit de l'état de `main` : test des commandes, ergonomie (user‑friendly),
-gestion d'erreurs, journalisation interne, script de déploiement,
-rangement des cogs et organisation du dépôt.
+gestion d'erreurs, journalisation interne, rangement des cogs et
+organisation du dépôt.
 
 Échelle : 🟢 conforme · 🟡 amélioration mineure · 🟠 à corriger.
 
@@ -13,8 +13,8 @@ rangement des cogs et organisation du dépôt.
 **53 commandes** chargées sans erreur (54 cogs). L'ensemble est cohérent et
 fonctionnel : commandes hybrides pour le public, owner en préfixe seul,
 i18n fr/en complet, gestion d'erreurs centralisée et conviviale,
-journalisation triée, déploiement automatique robuste. Aucun défaut
-bloquant. Quelques améliorations mineures listées en §8.
+journalisation triée. Aucun défaut bloquant. Quelques améliorations
+mineures listées en §7.
 
 ## 2. Commandes (test d'introspection)
 
@@ -67,32 +67,20 @@ bloquant. Quelques améliorations mineures listées en §8.
   jamais muté par le formateur couleur (fichiers/tampon web sans ANSI). 🟢
 - **Console « live »** du panel web alimentée par le même flux. 🟢
 
-## 6. Script de mise à jour automatique (`scripts/deploy.sh`)
-
-Testé de bout en bout sur un clone en retard de plusieurs commits :
-- mise à jour `git reset --hard` vers la tête de la branche suivie ; 🟢
-- **préservation** de `data/*.json`, `logs/`, `.env` ; 🟢
-- **note de déploiement** `data/pending_deploy.json` (commits + PR), lue au
-  redémarrage par `updatenotify` pour prévenir les owners ; 🟢
-- **auto‑protection** : le script se recopie hors du dépôt et se
-  ré‑exécute, pour ne pas être écrasé par le `reset` pendant qu'il tourne ;
-  verrou anti‑concurrence ; idempotent. 🟢
-
-## 7. Rangement des cogs & organisation du dépôt
+## 6. Rangement des cogs & organisation du dépôt
 
 - **Convention respectée** : un fichier = une commande, sauf regroupements
   liés justifiés (ban/unban, confine/unconfine, mute/unmute,
   warn/unwarn/warns, watch/unwatch/watchlist, addowner/rmowner/owners). 🟢
 - **Cogs d'owner** isolés dans `cogs/owner/`. Cogs événementiels dédiés
-  (actionlog, errorreport, guildnotify, updatenotify, mention, errors,
-  webpanel). 🟢
+  (actionlog, errorreport, guildnotify, mention, errors, webpanel). 🟢
 - **Séparation nette** : `cogs/` · `utils/` · `web/` · `scripts/` · `docs/`.
   `.env.example`, `requirements.txt`, `.gitignore` présents ; `data/` gardé
   par `.gitkeep`, contenu gitignoré. 🟢
 - 🟡 `requirements.txt` épingle `discord.py>=2.3.0` alors que le code cible
   la série 2.7 ; relever le plancher (`>=2.4`) clarifierait le support.
 
-## 8. Améliorations mineures (appliquées)
+## 7. Améliorations mineures (appliquées)
 
 1. ✅ Handlers d'erreur locaux : repli générique (`error.generic`) — plus
    aucune erreur sans retour utilisateur (11 handlers).
@@ -101,8 +89,8 @@ Testé de bout en bout sur un clone en retard de plusieurs commits :
    `str(error)` brut relayé).
 3. ✅ `requirements.txt` : plancher `discord.py>=2.4.0`.
 
-## 9. Verdict
+## 8. Verdict
 
 🟢 **Sain et fonctionnel.** Aucune correction bloquante ; seulement des
 améliorations de confort. Le tronc (modération, automod, watch, logs,
-export, panel web, i18n, déploiement auto) est cohérent et testé.
+export, panel web, i18n) est cohérent et testé.

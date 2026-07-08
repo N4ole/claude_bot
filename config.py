@@ -26,9 +26,6 @@ OWNER_ID = int(_owner_id) if _owner_id and _owner_id.isdigit() else None
 VERSION = "0.20"
 BETA = True
 
-# URL du dépôt GitHub (liens de PR dans les notifications de mise à jour).
-REPO_URL = os.getenv("REPO_URL", "https://github.com/N4ole/Watcher")
-
 # Invitation vers le serveur de support (mentionnée dans le MP envoyé au
 # propriétaire d'un serveur blacklisté). Vide = aucun lien affiché.
 SUPPORT_SERVER = os.getenv("SUPPORT_SERVER", "")
