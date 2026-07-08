@@ -7,6 +7,7 @@
 - [`!antiraid`](../commands/antiraid.md) — Active/désactive le captcha à l'arrivée (on/off). — 🔒 *Administrateur*
 - [`!antispam`](../commands/antispam.md) — Active/désactive l'anti-spam (on/off). — 🔒 *Administrateur*
 - [`!ban`](../commands/ban.md) — Bannit un utilisateur (raison et durée optionnelle). — 🔒 *Bannir des membres*
+- [`!bienvenue`](../commands/bienvenue.md) — Configure les messages de bienvenue/au revoir. — 🔒 *Administrateur*
 - [`!clear`](../commands/clear.md) — Supprime un nombre de messages du salon (max 100). — 🔒 *Gérer les messages*
 - [`!confine`](../commands/confine.md) — Isole un utilisateur dans un salon de confinement. — 🔒 *Administrateur*
 - [`!kick`](../commands/kick.md) — Expulse un utilisateur du serveur (avec raison). — 🔒 *Expulser des membres*

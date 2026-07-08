@@ -82,11 +82,20 @@ ensemble (`mute`/`unmute`, `ban`/`unban`, `confine`/`unconfine`,
 - **Logs Discord** : `logs <on|off> <catégorie>` (admin). Crée une catégorie
   `logs` (masquée) + un salon par type activé (types = catégories du help).
   Consigne chaque commande de la catégorie (qui/où/via/args) et les échecs.
+- **Bienvenue / au revoir** (`welcome`, admin) : groupe `bienvenue` (salon,
+  message, aurevoir, mp on/off, mpmessage, config). Messages d'arrivée/départ
+  dans un salon + **MP de bienvenue** optionnel, tous personnalisables
+  (placeholders `{user}`/`{name}`/`{server}`/`{count}`).
+- **Giveaways** (`giveaway`, admin) : `giveaway <durée> <gagnants> <prix>`
+  (réaction 🎉), `gend` (fin anticipée), `greroll` (nouveau tirage). Persistés
+  (`giveaways.json`) et repris au démarrage (`on_ready`).
 - **Owners du bot** (`cogs/owner/`, **préfixe uniquement**) :
   `addowner`/`rmowner`/`owners` (manage), `serveurs`, `invite`, `respond`
   (MP à un propriétaire de serveur, ou `all` pour une annonce), `helpowner`,
-  `central`, `reload`/`shutdown`/`say`. Réservés via `checks.is_owner()`,
-  utilisables aussi en MP.
+  `central`, `reload`/`shutdown`/`say`, `leave <id>` (quitter un serveur),
+  `banserv`/`unbanserv`/`banservs` (**blacklist de serveurs** : départ auto +
+  MP au proprio avec lien de support + alerte owners). Réservés via
+  `checks.is_owner()`, utilisables aussi en MP.
 - **Notifications owners** : `guildnotify` envoie un MP à tous les owners
   quand le bot **rejoint/quitte** un serveur (infos serveur + total).
 - **Rapport d'erreurs** : `errorreport` envoie un MP détaillé aux owners sur

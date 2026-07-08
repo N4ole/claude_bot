@@ -29,6 +29,10 @@ BETA = True
 # URL du dépôt GitHub (liens de PR dans les notifications de mise à jour).
 REPO_URL = os.getenv("REPO_URL", "https://github.com/N4ole/Watcher")
 
+# Invitation vers le serveur de support (mentionnée dans le MP envoyé au
+# propriétaire d'un serveur blacklisté). Vide = aucun lien affiché.
+SUPPORT_SERVER = os.getenv("SUPPORT_SERVER", "")
+
 # --- Panel web (OAuth2 Discord) ------------------------------------------- #
 OAUTH_CLIENT_ID = os.getenv("OAUTH_CLIENT_ID")
 OAUTH_CLIENT_SECRET = os.getenv("OAUTH_CLIENT_SECRET")

@@ -40,6 +40,8 @@ _SETTINGS_PATH = _DATA / "guild_settings.json"
 _MODLOG_PATH = _DATA / "modlog.json"
 _REMINDERS_PATH = _DATA / "reminders.json"
 _TEMPBAN_PATH = _DATA / "tempbans.json"
+_GIVEAWAYS_PATH = _DATA / "giveaways.json"
+_BLACKLIST_PATH = _DATA / "guild_blacklist.json"
 _lock = Lock()
 _owners_lock = Lock()
 _warns_lock = Lock()
@@ -48,6 +50,8 @@ _reminders_lock = Lock()
 _settings_lock = Lock()
 _modlog_lock = Lock()
 _tempban_lock = Lock()
+_giveaways_lock = Lock()
+_blacklist_lock = Lock()
 
 
 def _read() -> dict:
@@ -465,3 +469,123 @@ def remove_reminder(reminder_id: int) -> None:
 def get_reminders() -> list[dict]:
     """Renvoie tous les rappels en attente."""
     return _read_reminders()
+
+
+# --------------------------------------------------------------------------- #
+# Giveaways (giveaways.json = liste de giveaways)
+#   {"message_id","channel_id","guild_id","prize","winners","end","host_id",
+#    "ended"}
+# --------------------------------------------------------------------------- #
+def _read_giveaways() -> list[dict]:
+    if not _GIVEAWAYS_PATH.exists():
+        return []
+    try:
+        with _GIVEAWAYS_PATH.open("r", encoding="utf-8") as f:
+            return json.load(f)
+    except (json.JSONDecodeError, OSError):
+        return []
+
+
+def _write_giveaways(data: list[dict]) -> None:
+    _atomic_dump(_GIVEAWAYS_PATH, data)
+
+
+def add_giveaway(
+    message_id: int, channel_id: int, guild_id: int, prize: str,
+    winners: int, end_ts: float, host_id: int,
+) -> dict:
+    """Enregistre un giveaway en cours et le renvoie."""
+    with _giveaways_lock:
+        data = _read_giveaways()
+        entry = {
+            "message_id": message_id,
+            "channel_id": channel_id,
+            "guild_id": guild_id,
+            "prize": prize,
+            "winners": winners,
+            "end": end_ts,
+            "host_id": host_id,
+            "ended": False,
+        }
+        data.append(entry)
+        _write_giveaways(data)
+        return entry
+
+
+def get_giveaway(message_id: int) -> dict | None:
+    """Renvoie un giveaway par l'id de son message, ou None."""
+    for g in _read_giveaways():
+        if g["message_id"] == message_id:
+            return g
+    return None
+
+
+def get_active_giveaways() -> list[dict]:
+    """Renvoie les giveaways non encore terminés."""
+    return [g for g in _read_giveaways() if not g.get("ended")]
+
+
+def mark_giveaway_ended(message_id: int) -> None:
+    """Marque un giveaway comme terminé (conservé pour un éventuel reroll)."""
+    with _giveaways_lock:
+        data = _read_giveaways()
+        for g in data:
+            if g["message_id"] == message_id:
+                g["ended"] = True
+        _write_giveaways(data)
+
+
+def remove_giveaway(message_id: int) -> None:
+    """Supprime définitivement un giveaway du stockage."""
+    with _giveaways_lock:
+        data = [g for g in _read_giveaways() if g["message_id"] != message_id]
+        _write_giveaways(data)
+
+
+# --------------------------------------------------------------------------- #
+# Blacklist de serveurs (guild_blacklist.json = liste d'IDs de serveurs)
+# --------------------------------------------------------------------------- #
+def _read_blacklist() -> list[int]:
+    if not _BLACKLIST_PATH.exists():
+        return []
+    try:
+        with _BLACKLIST_PATH.open("r", encoding="utf-8") as f:
+            return [int(x) for x in json.load(f)]
+    except (json.JSONDecodeError, OSError, ValueError, TypeError):
+        return []
+
+
+def _write_blacklist(data: list[int]) -> None:
+    _atomic_dump(_BLACKLIST_PATH, data)
+
+
+def add_blacklisted_guild(guild_id: int) -> bool:
+    """Blackliste un serveur. Renvoie False s'il l'était déjà."""
+    with _blacklist_lock:
+        data = _read_blacklist()
+        if guild_id in data:
+            return False
+        data.append(guild_id)
+        _write_blacklist(data)
+        return True
+
+
+def remove_blacklisted_guild(guild_id: int) -> bool:
+    """Retire un serveur de la blacklist. Renvoie False s'il n'y était pas."""
+    with _blacklist_lock:
+        data = _read_blacklist()
+        if guild_id not in data:
+            return False
+        data.remove(guild_id)
+        _write_blacklist(data)
+        return True
+
+
+def is_blacklisted_guild(guild_id: int) -> bool:
+    """True si le serveur est blacklisté."""
+    return guild_id in _read_blacklist()
+
+
+def get_blacklisted_guilds() -> list[int]:
+    """Renvoie la liste des serveurs blacklistés."""
+    return _read_blacklist()

@@ -21,8 +21,10 @@ CATEGORIES: dict[str, tuple[str, str | None]] = {
     "EightBall": ("cat.util", None),
     "Choose": ("cat.util", None),
     "RemindMe": ("cat.util", None),
+    "Giveaway": ("cat.util", "dperm.administrator"),
     # Modération
     "Watch": ("cat.mod", "dperm.administrator"),
+    "Welcome": ("cat.mod", "dperm.administrator"),
     "Confine": ("cat.mod", "dperm.administrator"),
     "Kick": ("cat.mod", "dperm.kick_members"),
     "Ban": ("cat.mod", "dperm.ban_members"),
