@@ -43,7 +43,8 @@ système de **déploiement automatique** depuis GitHub.
 ```
 main.py            Point d'entrée : setup_logging() puis bot.run().
 bot.py             Classe Watcher(commands.Bot) : intents, chargement auto
-                   des cogs, sync slash, on_error global, presence (bêta).
+                   des cogs, sync slash, on_error global. Statut Discord géré
+                   par le cog `presence` (rotation).
 config.py          Env (.env) : TOKEN, PREFIX, OWNER_ID, GUILD_ID, OAUTH_*,
                    WEB_*, VERSION, BETA.
 cogs/              Un fichier = une commande (voir convention).
