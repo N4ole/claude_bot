@@ -1,9 +1,38 @@
 # Watcher
 
-Bot Discord en Python supportant à la fois les **commandes préfixe** (`!` par
-défaut, **personnalisable par serveur** via la commande `prefixe`) et
-les **commandes slash** (`/`), avec une architecture multi-fichiers (un fichier
-par commande).
+Bot Discord de **modération et d'utilitaires** en Python (`discord.py`),
+**bilingue** (français par défaut, anglais). Il supporte à la fois les
+**commandes préfixe** (`!` par défaut, **personnalisable par serveur** via la
+commande `prefixe`) et les **commandes slash** (`/`), avec une architecture
+multi-fichiers (un fichier par commande).
+
+- **Version : `0.20` (bêta).**
+- Commandes publiques **hybrides** (préfixe + slash) ; commandes d'**owner du
+  bot** en **préfixe uniquement**.
+
+## Sommaire des fonctionnalités
+
+- **Modération** : `kick`, `ban`/`unban` (dont ban temporaire et ban par ID),
+  `mute`/`unmute` (timeout), `warn` (escalade 1→5), `confine`/`unconfine`,
+  `clear`.
+- **Modération vocale** : `mutemicro`/`unmutemicro` (couper le micro),
+  `mutecasque`/`unmutecasque` (couper le son), `move` (déplacer en vocal).
+- **Dossier utilisateur** : `userstatus` (historique des sanctions), `note` /
+  `delnote` (notes libres).
+- **Automodération** : anti-bot, anti-raid (captcha), anti-pub, anti-spam,
+  anti-insulte, anti-majuscules, anti-emojis (les admins sont exemptés).
+- **Surveillance** : `watch` recopie l'activité d'un membre dans un salon dédié.
+- **Logs Discord** : `logs` (par catégorie) + journalisation de la modération
+  **faite hors commande** (suppression de message, ban/kick manuels…).
+- **Bienvenue / au revoir** : messages d'arrivée/départ + **MP de bienvenue**,
+  tous personnalisables.
+- **Giveaways** : `giveaway`, `gend`, `greroll` (réaction 🎉, persistés).
+- **Tickets** : panneau à **bouton persistant** créant des salons privés.
+- **Export** : journal de modération en `txt` / `csv` / `pdf`.
+- **Panel web** d'administration (OAuth2 Discord, thème néon, console live).
+- **Owners du bot** : gestion des owners, tableau de bord, blacklist de
+  serveurs, quitter un serveur à distance…
+- **Déploiement automatique** depuis GitHub (`scripts/deploy.sh`).
 
 ## Structure
 
@@ -11,105 +40,51 @@ par commande).
 Watcher/
 ├── main.py          # Point d'entrée : lance le bot
 ├── bot.py           # Classe du bot + chargement automatique des cogs
-├── config.py        # Configuration (token, préfixe, guild id, OAuth...)
+├── config.py        # Configuration (token, préfixe, owner, OAuth, support…)
 ├── requirements.txt
 ├── .env.example     # Modèle de configuration
 ├── utils/           # Modules communs
-│   ├── storage.py       # Persistance (JSON)
-│   ├── checks.py        # Vérifications (is_owner...)
-│   ├── automod.py       # Logique anti-majuscules / anti-emojis
-│   └── badwords.py      # Dictionnaire anti-insulte
-├── web/             # Panel web
-│   ├── web_app.py       # Serveur aiohttp + OAuth2
-│   └── stats.py         # Statistiques (séries temporelles)
-├── data/            # Données runtime générées (JSON, ignoré par git)
-├── docs/            # Documentation (guide OAuth2...)
+│   ├── storage.py       # Persistance (JSON par domaine, écritures atomiques)
+│   ├── i18n.py          # Catalogue de traductions fr/en (t(ctx, clé))
+│   ├── checks.py        # Vérifications de permissions (source unique)
+│   ├── categories.py    # Mapping cog → catégorie (help ET logs)
+│   ├── logchannels.py   # Résolution des salons de logs (source unique)
+│   ├── duration.py      # parse_duration("1h30m") / human(delta)
+│   ├── automod.py       # Escalade anti-caps / anti-emojis
+│   ├── badwords.py      # Dictionnaire anti-insulte
+│   ├── analytics.py     # Séries temporelles (commande analyse)
+│   └── logsetup.py      # Console colorée + fichiers de logs
+├── web/             # Panel web (aiohttp + OAuth2 Discord)
+├── scripts/         # deploy.sh, install-autodeploy.sh, unités systemd, gen_docs
+├── docs/            # Documentation (guides + docs générées)
+├── data/            # Données runtime (JSON, ignoré par git)
 └── cogs/            # Un fichier par commande / fonctionnalité
-    ├── help.py
-    ├── ping.py
-    ├── watch.py
-    ├── ...
-    └── owner/        # Commandes réservées aux owners du bot
-        ├── manage.py     # addowner / rmowner / owners
-        ├── reload.py     # reload
-        ├── shutdown.py   # shutdown
-        └── say.py        # say
+    └── owner/           # Commandes réservées aux owners du bot
 ```
 
-Les modules communs sont regroupés dans `utils/` et `web/` (packages Python) ;
-les fichiers de données générés à l'exécution sont dans `data/`.
-
-Le bot est **bilingue** (français par défaut, anglais). La commande
-`langue <fr/en>` change la langue **par serveur** ; les messages passent par le
-catalogue centralisé [`utils/i18n.py`](utils/i18n.py) (fonction `t(ctx, clé)`).
+Les cogs sont chargés **récursivement** : ajouter un fichier dans `cogs/` **ou**
+dans un sous-dossier (comme `cogs/owner/`) suffit pour ajouter une commande.
 
 ## Documentation
 
 Documentation détaillée dans [`docs/`](docs/README.md), sur trois axes :
-- **Par commande** — [`docs/commands/`](docs/commands/README.md) (une fiche par commande, générée automatiquement)
+- **Par commande** — [`docs/commands/`](docs/commands/README.md) (une fiche par
+  commande, générée automatiquement)
 - **Par catégorie** — [`docs/categories/`](docs/categories/README.md)
-- **Par système** — [`docs/systems/`](docs/systems/README.md) (fonctionnement, persistance, permissions)
+- **Par système** — [`docs/systems/`](docs/systems/README.md)
 
 Régénérer les fiches par commande/catégorie après un changement :
 `python -m scripts.gen_docs`.
 
-Les cogs sont chargés récursivement : ajouter un fichier dans `cogs/` **ou**
-dans un sous-dossier (comme `cogs/owner/`) suffit pour ajouter une commande.
-
-Mentionner le bot (`@Watcher` seul) affiche un message de présentation.
-
-Les **owners du bot** peuvent utiliser ses commandes en **message privé** avec
-lui (les commandes nécessitant un serveur restent, elles, réservées aux
-serveurs). En MP, les commandes des non-owners sont ignorées.
-
-Chaque commande utilise `@commands.hybrid_command`, ce qui la rend disponible
-**à la fois** en préfixe (`!ping`) et en slash (`/ping`) sans duplication.
-Le préfixe est propre à chaque serveur : le propriétaire le change avec
-`prefixe <nouveau>` (ou `prefixe reset`), le choix est persisté et la
-mention du bot reste toujours utilisable en secours.
-
-Les commandes slash sont synchronisées **sur le serveur de dev** (`GUILD_ID`,
-mise à jour instantanée) **et globalement** (utilisables partout, y compris en
-MP).
-
-## Panel web (administration)
-
-Un panel web optionnel, avec **connexion Discord (OAuth2)**, affiche des
-graphiques : évolution du nombre de serveurs et du total de membres, évolution
-des membres par serveur, et utilisation (commandes) par serveur.
-
-- **Accès** : les **owners** du bot voient toutes les données ; un
-  **administrateur** d'un serveur où le bot est présent voit les données des
-  serveurs qu'il administre. Les autres sont refusés.
-- **Dashboard selon le statut** : détecté à la connexion. Les **owners** ont une
-  interface en trois pages — **Général** (analytics + contrôle du bot),
-  **Analytics** (sélecteur de serveur : vue agrégée par défaut ou par serveur)
-  et **Live** (console en direct recopiant toute la sortie du bot). Les
-  **administrateurs** voient les graphiques des serveurs qu'ils administrent.
-- **Journal d'actions** : chaque action du bot (commandes avec qui/où/quand,
-  automodération, arrivées/départs de serveurs…) est écrite dans la console et
-  consultable en direct sur la page **Live**. Interface au thème **néon**.
-- **Activation** : renseignez `OAUTH_CLIENT_ID` et `OAUTH_CLIENT_SECRET` dans le
-  `.env` (sinon le panel ne démarre pas). Ajoutez `OAUTH_REDIRECT_URI` dans les
-  *Redirects* OAuth2 de l'application Discord.
-- Les statistiques sont échantillonnées chaque heure (et à chaque
-  entrée/sortie de serveur), et persistées dans `stats.json`.
-
-Une fois lancé, le panel est accessible sur `http://WEB_HOST:WEB_PORT`.
-
-Deux pages **publiques** (sans connexion) sont servies par le panel :
-`/privacy` (politique de confidentialité) et `/terms` (conditions
-d'utilisation) — utiles pour les champs *Privacy Policy URL* / *Terms of
-Service URL* du portail développeur Discord.
-
-👉 Guide pas à pas pour configurer l'OAuth2 : [`docs/OAUTH_SETUP.md`](docs/OAUTH_SETUP.md).
-
-## Messages d'erreur
-
-Un gestionnaire d'erreurs global affiche un message clair lorsqu'une commande
-échoue : notamment, si un utilisateur n'a pas les permissions requises, le bot
-indique **quelle(s) permission(s)** sont nécessaires. La commande `help` range
-les commandes **par catégories** et précise la permission requise (🔒).
+Le bot est **bilingue** : `langue <fr/en>` change la langue **par serveur** ;
+les messages passent par le catalogue centralisé
+[`utils/i18n.py`](utils/i18n.py). Chaque commande publique utilise
+`@commands.hybrid_command` (disponible en `!ping` **et** `/ping`). Le préfixe
+est propre à chaque serveur (`prefixe <nouveau>` / `prefixe reset`) ; la
+mention du bot reste toujours utilisable en secours. Les slash sont
+synchronisées sur le serveur de dev (`GUILD_ID`, instantané) **et**
+globalement. Mentionner le bot (`@Watcher` seul) affiche un message de
+présentation.
 
 ## Installation
 
@@ -118,10 +93,11 @@ pip install -r requirements.txt
 cp .env.example .env
 ```
 
-Renseignez ensuite votre `DISCORD_TOKEN` dans le fichier `.env`.
-
-Dans le portail développeur Discord, activez l'intent **MESSAGE CONTENT**
-(nécessaire pour les commandes préfixe).
+Renseignez votre `DISCORD_TOKEN` dans `.env`. Dans le portail développeur
+Discord, activez les intents **MESSAGE CONTENT**, **SERVER MEMBERS** et
+**PRESENCE INTENT**. Donnez au bot les permissions nécessaires à ses actions
+(dont **Gérer les salons**, **Gérer les rôles**, et **Voir les logs d'audit**
+pour la journalisation de la modération hors commande).
 
 ## Lancement
 
@@ -131,79 +107,110 @@ python main.py
 
 ## Configuration (`.env`)
 
-| Variable         | Description                                                      | Défaut |
-|------------------|------------------------------------------------------------------|--------|
-| `DISCORD_TOKEN`  | Token du bot (obligatoire)                                        | —      |
-| `COMMAND_PREFIX` | Préfixe **par défaut** (chaque serveur peut le changer : `prefixe`) | `!`    |
-| `GUILD_ID`       | ID d'un serveur pour synchroniser les slash instantanément (dev) | global |
-| `OWNER_ID`       | ID Discord de l'owner principal du bot                           | —      |
+| Variable          | Description                                                       | Défaut |
+|-------------------|------------------------------------------------------------------|--------|
+| `DISCORD_TOKEN`   | Token du bot (obligatoire)                                        | —      |
+| `COMMAND_PREFIX`  | Préfixe **par défaut** (chaque serveur peut le changer)          | `!`    |
+| `GUILD_ID`        | ID d'un serveur pour synchroniser les slash instantanément (dev) | global |
+| `OWNER_ID`        | ID Discord de l'owner principal du bot                           | —      |
+| `REPO_URL`        | Dépôt GitHub (liens de PR dans les notifications de mise à jour)  | Watcher|
+| `SUPPORT_SERVER`  | Invitation du serveur de support (MP de blacklist `banserv`)      | —      |
+| `OAUTH_*`, `WEB_*`| Panel web (voir plus bas)                                        | —      |
 
 > Sans `GUILD_ID`, les commandes slash sont synchronisées globalement, ce qui
 > peut prendre jusqu'à une heure la première fois.
 
-## Ajouter une commande
+## Commandes
 
-Créez un fichier `cogs/ma_commande.py` sur le modèle des cogs existants. Il sera
-chargé automatiquement au démarrage.
+> `help` présente les commandes **par catégories** (une page par catégorie,
+> navigation par boutons ◀️/▶️) et précise la permission requise (🔒).
+> `help <commande>` affiche le détail (description, usage, catégorie,
+> permission, alias). Les listes ci-dessous sont un résumé ; la référence
+> complète est générée dans [`docs/commands/`](docs/commands/README.md).
 
-## Commandes disponibles
+### Général & infos
 
-| Commande   | Description                          |
-|------------|--------------------------------------|
-| `help`     | Liste les commandes disponibles (hors commandes d'owner) |
-| `bonjour`  | Le bot vous salue                    |
-| `ping`     | Affiche la latence du bot            |
-| `userinfo [membre]` | Affiche les informations détaillées d'un utilisateur (défaut : soi-même) |
-| `avatar [membre]`   | Affiche l'avatar d'un utilisateur (avec liens PNG/JPG/WEBP/GIF) |
-| `uptime`   | Affiche depuis combien de temps le bot tourne |
-| `status`   | Version, ping et nombre de serveurs |
-| `botinfo`  | Informations et statistiques du bot |
+| Commande | Description |
+|----------|-------------|
+| `help [commande]` | Aide générale ou détail d'une commande |
+| `bonjour` | Le bot vous salue |
+| `ping` | Latence du bot |
+| `status` | Version, ping et nombre de serveurs |
+| `uptime` | Depuis combien de temps le bot tourne |
+| `botinfo` | Informations et statistiques du bot |
+| `userinfo [membre]` | Infos détaillées d'un utilisateur |
+| `avatar [membre]` | Avatar d'un utilisateur (liens PNG/JPG/WEBP/GIF) |
 | `serverinfo` | Informations sur le serveur |
 | `membercount` | Nombre de membres (humains / bots) |
-| `remindme <message> <temps>` | Rappel envoyé en MP après le délai (ex: `1h30m`) |
-| `poll <question [\| opt1 \| opt2...]>` | Crée un sondage à réactions |
+
+### Utilitaire
+
+| Commande | Description |
+|----------|-------------|
+| `remindme <message> <temps>` | Rappel en MP après un délai (ex: `1h30m`) |
+| `poll <question [\| opt1 \| opt2…]>` | Sondage à réactions |
 | `roll [NdM]` | Lance des dés (ex: `2d6`, `d20`) |
 | `coinflip` | Pile ou face |
 | `8ball <question>` | La boule magique répond |
-| `choose <a \| b \| ...>` | Le bot choisit une option au hasard |
+| `choose <a \| b \| …>` | Choisit une option au hasard |
+| `giveaway <durée> <gagnants> <prix>` | Lance un giveaway (réaction 🎉) — *admin* |
+| `gend <id>` / `greroll <id>` | Fin anticipée / nouveau tirage — *admin* |
 
-> La commande `help` présente les commandes **par catégories, une page par
-> catégorie**, avec des **boutons** de navigation (◀️ / ▶️).
-> `help <commande>` affiche le **détail** d'une commande (description, usage,
-> catégorie, permission requise, alias).
-| `contactowner <message>` | Réservée au **propriétaire du serveur** : envoie le message en MP à tous les owners du bot, avec les infos du serveur et une invitation. |
+### Modération (permission **Administrateur** sauf mention contraire)
 
-### Commandes d'administration
+| Commande | Description |
+|----------|-------------|
+| `kick <membre> [raison]` | Expulse un membre (MP + raison) — *Expulser des membres* |
+| `ban <membre\|id> [durée] [raison]` | Bannit (temporaire possible, ban par ID) — *Bannir des membres* |
+| `unban <id>` | Débannit par ID — *Bannir des membres* |
+| `mute <membre> <durée>` / `unmute <membre>` | Timeout Discord (max 28 j) |
+| `mutemicro` / `unmutemicro <membre>` | Couper/rendre le micro en vocal — *Rendre muet* |
+| `mutecasque` / `unmutecasque <membre>` | Couper/rendre le son en vocal — *Rendre sourd* |
+| `move <membre> <salon>` | Déplace un membre en vocal — *Déplacer des membres* |
+| `warn <membre>` / `unwarn` / `warns` | Avertissements (escalade, voir plus bas) |
+| `confine <membre>` / `unconfine <membre>` | Isole un membre dans un salon dédié |
+| `clear <nombre>` | Supprime des messages (max 100) — *Gérer les messages* |
+| `userstatus <membre>` | Historique des sanctions + notes |
+| `note <membre> <texte>` / `delnote <membre> <n°>` | Notes libres au dossier |
+| `watch` / `unwatch` / `watchlist` | Surveille l'activité d'un membre |
+| `logs <on\|off> <catégorie>` / `logs status` | Logs Discord par catégorie |
+| `bienvenue …` | Messages de bienvenue/au revoir + MP (voir plus bas) |
+| `ticket <salon> <message>` / `closeticket` | Système de tickets à bouton |
+| `antibot` / `antiraid` / `antipub` / `antispam` / `antiinsulte` `<on/off>` | Automodération |
+| `protections` | État de toutes les protections |
+| `analyse` | Courbes d'activité du serveur sur 7 jours |
+| `langue <fr/en>` | Langue du bot pour ce serveur |
 
-Réservées aux membres possédant la permission **Administrateur**.
+### Propriétaire du serveur
 
-| Commande            | Description                                                     |
-|---------------------|-----------------------------------------------------------------|
-| `watch <membre>`    | Surveille un utilisateur : crée la catégorie `WATCHED USER` et un salon privé `<user>-watched` où sont recopiés ses messages (envoyés, modifiés, supprimés), ses réactions (ajoutées/retirées), ses changements de pseudo et de statut, et son activité vocale (connexion/déconnexion, heure de sortie et durée de présence). |
-| `unwatch <membre>`  | Arrête la surveillance (le salon de log est conservé).          |
-| `watchlist`         | Liste les utilisateurs surveillés sur le serveur.               |
-| `antibot <on/off>`  | Quand activé, expulse automatiquement tout bot qui rejoint le serveur. |
-| `antiraid <on/off>` | Quand activé, chaque nouveau membre doit valider un captcha (code à recopier dans le salon `vérification`) avant d'accéder au serveur. |
-| `antipub <on/off>`  | Quand activé, supprime les messages contenant une invitation Discord et prévient l'auteur. |
-| `antispam <on/off>` | Quand activé, mute temporairement un membre qui envoie trop de messages en peu de temps. |
-| `antiinsulte <on/off>` | Quand activé, supprime les messages contenant une insulte (gère les orthographes alternatives : leet, lettres répétées, espacées…) et prévient l'auteur. |
-| `langue <fr/en>`    | Choisit la langue du bot pour ce serveur (français par défaut). |
-| `protections`       | Affiche l'état (on/off) de toutes les protections du serveur. |
-| `userstatus <membre>` | Affiche l'historique des sanctions reçues par un membre (warns, mutes, durées, totaux…). |
-| `analyse`           | Génère des courbes d'activité du serveur sur 7 jours (membres, messages par membre/jour, arrivées/départs). |
-| `confine <membre>`  | Isole un utilisateur : crée la catégorie `confinement` et un salon `confin-<user>` où seuls lui et les admins accèdent, et retire son accès au reste du serveur. |
-| `unconfine <membre>`| Libère l'utilisateur : restaure son accès et supprime le salon de confinement. |
-| `mute <membre> <durée>` | Coupe la parole (timeout Discord) pour une durée (`30s`, `5m`, `2h`, `1d`, `1h30m` ; max 28 j). |
-| `unmute <membre>`   | Rend la parole à un utilisateur mute.                           |
-| `clear <nombre>`    | Supprime un nombre de messages du salon (max 100 ; permission *Gérer les messages*). |
-| `warn <membre>`     | Avertit un utilisateur (sanction progressive, voir ci-dessous). |
-| `unwarn <membre>`   | Retire un avertissement et lève les sanctions temporaires.      |
-| `warns <membre>`    | Affiche le nombre d'avertissements d'un utilisateur.            |
+| Commande | Description |
+|----------|-------------|
+| `prefixe [nouveau\|reset]` | Affiche/change le préfixe du bot sur ce serveur |
+| `export <txt\|csv\|pdf> [période]` | Exporte le journal de modération |
+| `contactowner <message>` | Envoie un MP aux owners du bot (infos serveur) |
 
-#### Barème des avertissements
+### Owner du bot (préfixe uniquement)
 
-Chaque niveau attribue un rôle `Warn N` (sans permission) qui remplace le
-précédent, et applique une sanction :
+Réservées aux **owners du bot** (l'owner principal `OWNER_ID`, plus les owners
+additionnels). Fonctionnent partout, y compris en MP, indépendamment des
+permissions du serveur.
+
+| Commande | Description |
+|----------|-------------|
+| `addowner` / `rmowner` / `owners` | Gestion des owners (l'owner principal est protégé) |
+| `helpowner` | Liste les commandes d'owner |
+| `central` | Tableau de bord global du bot |
+| `serveurs` | Détaille chaque serveur (une page par serveur) |
+| `invite <id>` | Génère une invitation vers un serveur du bot |
+| `respond <id\|all> <message>` | MP à un propriétaire de serveur (ou annonce) |
+| `leave <id>` | Fait quitter un serveur au bot |
+| `banserv <id>` / `unbanserv <id>` / `banservs` | Blacklist de serveurs |
+| `reload [cog\|all]` / `shutdown` / `say <message>` | Contrôle du bot |
+
+## Barème des avertissements
+
+Chaque niveau attribue un rôle `Warn N` (sans permission) et applique une
+sanction :
 
 | Niveau | Sanction |
 |--------|----------|
@@ -213,62 +220,79 @@ précédent, et applique une sanction :
 | 4 | Confinement pendant une semaine |
 | 5 | Bannissement permanent |
 
-> Le compteur est persistant (`warns.json`). Le confinement du niveau 4 est
-> temporisé jusqu'à une **date de fin précise**, persistée dans
-> `confinements.json` : la libération est **automatiquement reprise au démarrage**
-> du bot (libération immédiate si l'échéance est déjà passée).
+> Le compteur est persistant (`warns.json`). Les bans temporaires et le
+> confinement du niveau 4 sont **persistés** (date de fin précise) et
+> **repris automatiquement au démarrage** du bot.
 
-### Automodération
+## Automodération
 
 Active en permanence, ignore les bots et les administrateurs.
 
-- **Anti-majuscules** : un message contenant **plus de 75 %** de lettres
-  majuscules (au moins 8 lettres) est supprimé.
-- **Anti-emojis** : un message composé à **plus de 75 %** d'emojis (au moins 5)
-  est supprimé.
+- **Anti-bot / anti-raid / anti-pub / anti-spam / anti-insulte** : activables
+  par commande (`<on/off>`).
+- **Anti-majuscules** : message à plus de 75 % de majuscules (≥ 8 lettres)
+  supprimé.
+- **Anti-emojis** : message composé à plus de 75 % d'emojis (≥ 5) supprimé.
 
-Escalation par utilisateur et par type d'infraction :
+Escalation par utilisateur et par type : 1re infraction → avertissement, 2e →
+avertissement officiel, 3e et + → mute progressif. Les compteurs
+d'automodération sont en mémoire (réinitialisés au redémarrage).
 
-| Infraction | Sanction |
-|------------|----------|
-| 1re | Suppression + message d'avertissement |
-| 2e | Suppression + avertissement officiel |
-| 3e et + | Suppression + mute (timeout) de 5, 10, 15... minutes |
+## Bienvenue / au revoir
 
-> Les compteurs d'automodération sont conservés en mémoire (réinitialisés au
-> redémarrage du bot).
+Groupe `bienvenue` (admin) : `salon` (salon des messages), `message` (arrivée),
+`aurevoir` (départ), `mp <on/off>` (**MP de bienvenue**), `mpmessage` (message
+du MP), `config` (état). Placeholders disponibles : `{user}`, `{name}`,
+`{server}`, `{count}`.
 
-> Le salon de log n'est visible que par les administrateurs et le bot.
-> La surveillance persiste entre les redémarrages (`watched.json`).
+## Tickets
 
-### Commandes d'owner
+`ticket <salon> <message>` poste un panneau avec un **bouton persistant**
+(fonctionne après un redémarrage). Un clic crée un salon privé `ticket-<n°>`
+visible du seul membre + admins ; `closeticket` retire l'accès du membre et
+archive le salon (`closed-<n°>`).
 
-Réservées aux **owners du bot** (l'owner principal `OWNER_ID` du `.env`, plus
-les owners additionnels). Fonctionnent partout, indépendamment des permissions
-du serveur.
+## Panel web (administration)
 
-| Commande            | Description                                                     |
-|---------------------|-----------------------------------------------------------------|
-| `addowner <user>`   | Ajoute un owner additionnel (stocké dans `owners.json`).        |
-| `rmowner <user>`    | Retire un owner additionnel (l'owner principal est protégé).    |
-| `owners`            | Liste tous les owners du bot.                                   |
-| `reload [cog]`      | Recharge un cog à chaud (ou `all` pour tout recharger).         |
-| `shutdown`          | Éteint le bot.                                                  |
-| `say <message>`     | Fait parler le bot dans le salon courant.                      |
-| `helpowner`         | Liste les commandes d'owner (**préfixe uniquement**).          |
-| `serveurs`          | Détaille chaque serveur du bot, **une page par serveur** (navigation par boutons ◀️/▶️), avec un maximum d'infos (membres, salons, rôles, émojis, boosts, vérification, fonctionnalités, vanity, langue…). |
-| `invite <serverid>` | Génère une invitation vers un serveur où se trouve le bot.     |
+Un panel web optionnel, avec **connexion Discord (OAuth2)**, affiche des
+graphiques (serveurs, membres, utilisation par serveur).
 
-Ces commandes sont regroupées dans le dossier `cogs/owner/`.
+- **Accès** : les **owners** voient toutes les données ; un **administrateur**
+  voit les serveurs qu'il administre ; les autres sont refusés.
+- **Dashboard owner** en trois pages — **Général** (analytics + contrôle),
+  **Analytics** (par serveur ou agrégé) et **Live** (console en direct).
+- **Activation** : renseignez `OAUTH_CLIENT_ID` et `OAUTH_CLIENT_SECRET` dans
+  `.env` (sinon le panel ne démarre pas) ; ajoutez `OAUTH_REDIRECT_URI` dans
+  les *Redirects* OAuth2 de l'application Discord. Écoute sur `WEB_HOST`
+  (`127.0.0.1` par défaut) / `WEB_PORT`.
+- Pages **publiques** : `/privacy` et `/terms` (pour les champs du portail
+  Discord).
 
-Par ailleurs, lorsqu'un owner du bot rejoint un serveur où le bot est présent,
-celui-ci lui attribue automatiquement un rôle **`owner-claudebot`** (sans
-aucune permission). Cela nécessite la permission **Gérer les rôles** pour le bot.
+👉 Guide pas à pas : [`docs/OAUTH_SETUP.md`](docs/OAUTH_SETUP.md).
 
-> L'owner principal est défini par `OWNER_ID` dans le `.env` et ne peut pas
-> être retiré. Les owners additionnels persistent dans `owners.json`.
->
-> **Intents requis** (à activer dans le portail développeur Discord) :
-> *MESSAGE CONTENT*, *SERVER MEMBERS* et *PRESENCE INTENT* — le bot demande
-> `members`, `voice_states`, `presences` et `message_content`. Le bot doit
-> aussi disposer de la permission **Gérer les salons**.
+## Déploiement automatique
+
+`scripts/deploy.sh` déploie chaque push GitHub : il récupère la branche suivie,
+remplace le code local (`git reset --hard`, en **préservant** `data/`, `.env`,
+`logs/`), réinstalle les dépendances si besoin, puis redémarre le bot —
+via **systemd** si un service est configuré, sinon via
+[`scripts/watcher-ctl.sh`](scripts/watcher-ctl.sh) (process Python autonome
+avec relance auto). `scripts/install-autodeploy.sh` installe le lancement
+périodique (timer systemd ou cron) en une commande.
+
+👉 Guide complet : [`docs/DEPLOY.md`](docs/DEPLOY.md).
+
+## Owners du bot & notifications
+
+Lorsqu'un owner du bot rejoint un serveur, celui-ci lui attribue
+automatiquement un rôle `owner-claudebot` (sans permission ; nécessite **Gérer
+les rôles**). Les owners sont prévenus en MP à chaque arrivée/départ de serveur
+(`guildnotify`) et sur erreur inattendue (`errorreport`). L'owner principal
+(`OWNER_ID`) ne peut pas être retiré ; les owners additionnels persistent dans
+`owners.json`.
+
+## Messages d'erreur
+
+Un gestionnaire global affiche un message clair et traduit lorsqu'une commande
+échoue (permissions manquantes précisées, etc.) sans jamais relayer une
+exception brute.

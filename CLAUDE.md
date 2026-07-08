@@ -13,11 +13,14 @@ dépôt. À lire **en premier**.
 
 **Watcher** est un bot Discord de **modération et d'utilitaires**, en Python
 (`discord.py`), entièrement **bilingue** (français par défaut, anglais). Il
-fournit : modération (kick/ban/mute/warn/confine), automodération (anti-raid,
-anti-spam, anti-pub, anti-insulte, anti-caps/emoji, anti-bot), surveillance
-d'utilisateurs (`watch`), logs Discord par catégorie, un **panel web**
-d'administration (OAuth2 Discord), une gestion d'**owners du bot**, et un
-système de **déploiement automatique** depuis GitHub.
+fournit : modération (kick/ban/mute/warn/confine + modération vocale), notes de
+dossier, automodération (anti-raid, anti-spam, anti-pub, anti-insulte,
+anti-caps/emoji, anti-bot), surveillance d'utilisateurs (`watch`), logs Discord
+par catégorie (dont la modération faite hors commande), messages de
+bienvenue/au revoir, giveaways, tickets, export du journal de modération, un
+**panel web** d'administration (OAuth2 Discord), une gestion d'**owners du
+bot** (dont blacklist de serveurs), et un système de **déploiement
+automatique** depuis GitHub.
 
 - **Version actuelle : `0.20` — en bêta** (`config.VERSION` / `config.BETA`).
 - Commandes **hybrides** (préfixe **personnalisable par serveur** — commande
@@ -45,8 +48,8 @@ main.py            Point d'entrée : setup_logging() puis bot.run().
 bot.py             Classe Watcher(commands.Bot) : intents, chargement auto
                    des cogs, sync slash, on_error global. Statut Discord géré
                    par le cog `presence` (rotation).
-config.py          Env (.env) : TOKEN, PREFIX, OWNER_ID, GUILD_ID, OAUTH_*,
-                   WEB_*, VERSION, BETA.
+config.py          Env (.env) : TOKEN, PREFIX, OWNER_ID, GUILD_ID, REPO_URL,
+                   SUPPORT_SERVER, OAUTH_*, WEB_*, VERSION, BETA.
 cogs/              Un fichier = une commande (voir convention).
 cogs/owner/        Commandes réservées aux owners du bot (préfixe seul,
                    masquées du help public).
@@ -75,14 +78,31 @@ ensemble (`mute`/`unmute`, `ban`/`unban`, `confine`/`unconfine`,
   avert. → mute 5 min → mute 1 h → confinement 1 semaine → ban),
   `confine`/`unconfine`, `clear`. Garde-fous : pas d'auto-sanction, respect
   de la hiérarchie des rôles (l'owner du serveur outrepasse).
+- **Modération vocale** : `mutemicro`/`unmutemicro` (server mute),
+  `mutecasque`/`unmutecasque` (server deafen), `move` (déplacement vocal).
+  Permissions dédiées dans `checks.py` (`mute_voice_perms`,
+  `deafen_voice_perms`, `move_perms`) ; actions consignées au dossier.
+- **Notes de dossier** : `note <membre> <texte>` / `delnote <membre> <n°>`
+  (admin) ajoutent/retirent des notes libres, affichées par `userstatus`
+  (persistées dans `notes.json`).
 - **Automodération** : `antibot`, `antiraid` (captcha à l'arrivée),
   `antipub`, `antispam`, `antiinsulte`, anti-caps, anti-emoji. **Les admins
   sont exemptés** (choix produit).
 - **Watch** : `watch <user>` copie l'activité d'un membre dans un salon dédié
   (messages, éditions, suppressions, vocal, réactions, pseudo/statut).
-- **Logs Discord** : `logs <on|off> <catégorie>` (admin). Crée une catégorie
-  `logs` (masquée) + un salon par type activé (types = catégories du help).
-  Consigne chaque commande de la catégorie (qui/où/via/args) et les échecs.
+- **Logs Discord** : `logs <on|off> <catégorie>` (admin, `logs status` pour
+  l'état). Crée une catégorie `logs` (masquée) + un salon par type activé
+  (types = catégories du help). Consigne chaque commande de la catégorie
+  (qui/où/via/args) et les échecs. La résolution du salon est factorisée dans
+  `utils/logchannels.py` (source unique, réutilisée hors de la commande).
+- **Logs de modération hors commande** (`modevents`) : suppression de message
+  par un modérateur (clic droit), ban/déban/kick faits directement dans
+  Discord → consignés dans le salon de logs `mod`. Déduplication via les logs
+  d'audit (les actions du bot ne sont pas re-journalisées ; nécessite la
+  permission « Voir les logs d'audit »). L'anti-bot y journalise aussi ses
+  expulsions.
+- **Export** : `export <txt|csv|pdf> [période]` (propriétaire du serveur) —
+  exporte le journal de modération sur une période.
 - **Bienvenue / au revoir** (`welcome`, admin) : groupe `bienvenue` (salon,
   message, aurevoir, mp on/off, mpmessage, config). Messages d'arrivée/départ
   dans un salon + **MP de bienvenue** optionnel, tous personnalisables
@@ -113,18 +133,22 @@ ensemble (`mute`/`unmute`, `ban`/`unban`, `confine`/`unconfine`,
 ## 5. Modules `utils/`
 
 - `storage.py` — persistance JSON par domaine (réglages, warns, watched,
-  confinements, **tempbans**, modlog, reminders, owners). **Écritures
-  atomiques** (`_atomic_dump`), **cache mémoire des réglages** (invalidé à
-  l'écriture), un `Lock` par fichier.
+  confinements, **tempbans**, modlog, **notes**, reminders, **giveaways**,
+  **blacklist de serveurs**, owners ; compteur de tickets dans les réglages).
+  **Écritures atomiques** (`_atomic_dump`), **cache mémoire des réglages**
+  (invalidé à l'écriture), un `Lock` par fichier.
 - `i18n.py` — `t(source, key, **kwargs)` résout la langue via `source`
   (Context/guild/id → réglage `lang`, français par défaut). Grand `_CATALOG`
   fr/en, `EIGHTBALL`, `get_lang`. Descriptions du help via `cmddesc.<nom>`.
 - `categories.py` — **source unique** du mapping cog → catégorie
   (`cat.*`) + permissions, partagé par le **help** ET les **logs**
   (`TYPE_TO_CAT` / `CAT_TO_TYPE` / `resolve_type`).
+- `logchannels.py` — résolution du salon de logs d'un type (`log_channel`),
+  **source unique** partagée par `logs`, `modevents` et l'anti-bot.
 - `checks.py` — **SOURCE UNIQUE de toutes les vérifications de
   permissions** (voir §5 bis). Décorateurs : `admin()`, `kick_perms()`,
-  `ban_perms()`, `manage_messages()`, `server_owner()`, `is_owner()`.
+  `ban_perms()`, `manage_messages()`, `mute_voice_perms()`,
+  `deafen_voice_perms()`, `move_perms()`, `server_owner()`, `is_owner()`.
   Prédicats : `is_admin(member)`, `can_act_on(author, target)`,
   `is_owner_or_server_owner(ctx)`, `is_owner_id`, `all_owner_ids()`.
   Exceptions dédiées : `OwnerOnly`, `ServerOwnerOnly` (affichées en i18n
@@ -157,7 +181,8 @@ if checks.is_admin(message.author):   # exemption admins
 ```
 
 - Décorateurs : `admin()`, `kick_perms()`, `ban_perms()`,
-  `manage_messages()`, `server_owner()`, `is_owner()` — ils incluent déjà
+  `manage_messages()`, `mute_voice_perms()`, `deafen_voice_perms()`,
+  `move_perms()`, `server_owner()`, `is_owner()` — ils incluent déjà
   `guild_only` et les permissions bot quand pertinent.
 - Prédicats : `is_admin(member)` (exemption automod),
   `can_act_on(author, target)` (hiérarchie des rôles, owner du serveur
