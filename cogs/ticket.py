@@ -16,7 +16,7 @@ import logging
 import discord
 from discord.ext import commands
 
-from utils import checks, storage
+from utils import checks, replies, storage
 from utils.i18n import t
 
 log = logging.getLogger("action")
@@ -168,9 +168,11 @@ class Ticket(commands.Cog):
         try:
             await salon.send(embed=embed, view=TicketView())
         except discord.Forbidden:
-            await ctx.send(t(ctx, "ticket.panel_forbidden", channel=salon.mention))
+            await replies.reply(ctx, "ticket.panel_forbidden", kind="error",
+                                channel=salon.mention)
             return
-        await ctx.send(t(ctx, "ticket.panel_posted", channel=salon.mention))
+        await replies.reply(ctx, "ticket.panel_posted", kind="success",
+                            channel=salon.mention)
 
     @commands.hybrid_command(
         name="closeticket",
@@ -182,7 +184,7 @@ class Ticket(commands.Cog):
         category = getattr(channel, "category", None)
         if category is None or category.name != CATEGORY_NAME \
                 or not channel.name.startswith("ticket-"):
-            await ctx.send(t(ctx, "ticket.not_a_ticket"))
+            await replies.reply(ctx, "ticket.not_a_ticket", kind="error")
             return
 
         owner_id = _owner_id_from_topic(channel.topic)
@@ -197,7 +199,8 @@ class Ticket(commands.Cog):
                 except discord.HTTPException:
                     pass
 
-        await ctx.send(t(ctx, "ticket.closed", user=ctx.author.mention))
+        await replies.reply(ctx, "ticket.closed", kind="success",
+                            user=ctx.author.mention)
         # Renomme le salon pour marquer la fermeture (conservé pour les admins).
         try:
             await channel.edit(

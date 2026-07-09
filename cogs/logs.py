@@ -13,7 +13,7 @@ from discord import app_commands
 from discord.ext import commands
 
 import config
-from utils import appchoices, categories, checks, logchannels, storage
+from utils import appchoices, categories, checks, logchannels, replies, storage
 from utils.i18n import t
 
 log = logging.getLogger("action")
@@ -122,9 +122,9 @@ class Logs(commands.Cog):
             return
 
         if categorie is None:
-            await ctx.send(t(ctx, "logs.usage",
-                             prefix=ctx.prefix or config.PREFIX,
-                             types=_types_list()))
+            await replies.reply(ctx, "logs.usage", kind="error",
+                                prefix=ctx.prefix or config.PREFIX,
+                                types=_types_list())
             return
         raw = categorie.lower().strip()
 
@@ -133,7 +133,8 @@ class Logs(commands.Cog):
         else:
             token = categories.resolve_type(raw)
             if token is None:
-                await ctx.send(t(ctx, "logs.bad_type", types=_types_list()))
+                await replies.reply(ctx, "logs.bad_type", kind="error",
+                                    types=_types_list())
                 return
             tokens = [token]
 
@@ -150,11 +151,11 @@ class Logs(commands.Cog):
                 ",".join(tokens), ctx.guild.name, ctx.guild.id, ctx.author,
             )
             if len(tokens) > 1:
-                await ctx.send(t(ctx, "logs.on_all"))
+                await replies.reply(ctx, "logs.on_all", kind="success")
             else:
                 cat_key = categories.TYPE_TO_CAT[tokens[0]]
-                await ctx.send(t(ctx, "logs.on", type=t(ctx, cat_key),
-                                 channel=last.mention))
+                await replies.reply(ctx, "logs.on", kind="success",
+                                    type=t(ctx, cat_key), channel=last.mention)
 
         elif value in _OFF:
             enabled = dict(self._enabled(ctx.guild.id))
@@ -177,28 +178,30 @@ class Logs(commands.Cog):
                 except discord.HTTPException:
                     pass
             if len(tokens) > 1:
-                await ctx.send(t(ctx, "logs.off_all"))
+                await replies.reply(ctx, "logs.off_all", kind="info")
             elif removed:
-                await ctx.send(t(ctx, "logs.off",
-                                 type=t(ctx, categories.TYPE_TO_CAT[tokens[0]])))
+                await replies.reply(
+                    ctx, "logs.off", kind="info",
+                    type=t(ctx, categories.TYPE_TO_CAT[tokens[0]]))
             else:
-                await ctx.send(t(ctx, "logs.already_off",
-                                 type=t(ctx, categories.TYPE_TO_CAT[tokens[0]])))
+                await replies.reply(
+                    ctx, "logs.already_off", kind="warn",
+                    type=t(ctx, categories.TYPE_TO_CAT[tokens[0]]))
         else:
-            await ctx.send(t(ctx, "logs.usage",
-                             prefix=ctx.prefix or config.PREFIX,
-                             types=_types_list()))
+            await replies.reply(ctx, "logs.usage", kind="error",
+                                prefix=ctx.prefix or config.PREFIX,
+                                types=_types_list())
 
     @logs.error
     async def _error(self, ctx: commands.Context, error) -> None:
         if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send(t(ctx, "logs.usage",
-                             prefix=ctx.prefix or config.PREFIX,
-                             types=_types_list()))
+            await replies.reply(ctx, "logs.usage", kind="error",
+                                prefix=ctx.prefix or config.PREFIX,
+                                types=_types_list())
         else:
             # Repli : jamais d'erreur silencieuse pour l'utilisateur
             # (errorreport prévient déjà les owners avec la traceback).
-            await ctx.send(t(ctx, "error.generic"))
+            await replies.reply(ctx, "error.generic", kind="error")
 
     # ----------------------------------------------------------------- #
     # Routage des événements vers le salon de log de leur catégorie

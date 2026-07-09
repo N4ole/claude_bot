@@ -15,7 +15,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from utils import appchoices, checks, storage
+from utils import appchoices, checks, replies, storage
 from utils.i18n import t
 
 # Clés de réglage (guild_settings).
@@ -69,10 +69,11 @@ class Welcome(commands.Cog):
     ) -> None:
         if salon is None:
             storage.set_setting(ctx.guild.id, K_CHANNEL, None)
-            await ctx.send(t(ctx, "welcome.channel_off"))
+            await replies.reply(ctx, "welcome.channel_off", kind="success")
             return
         storage.set_setting(ctx.guild.id, K_CHANNEL, salon.id)
-        await ctx.send(t(ctx, "welcome.channel_set", channel=salon.mention))
+        await replies.reply(ctx, "welcome.channel_set", kind="success",
+                            channel=salon.mention)
 
     @bienvenue.command(name="message",
                        description="Message d'arrivée (vide = message par défaut).")
@@ -100,12 +101,13 @@ class Welcome(commands.Cog):
         value = etat.lower()
         if value in _ON:
             storage.set_setting(ctx.guild.id, K_DM, True)
-            await ctx.send(t(ctx, "welcome.dm_on"))
+            await replies.reply(ctx, "welcome.dm_on", kind="success")
         elif value in _OFF:
             storage.set_setting(ctx.guild.id, K_DM, False)
-            await ctx.send(t(ctx, "welcome.dm_off"))
+            await replies.reply(ctx, "welcome.dm_off", kind="info")
         else:
-            await ctx.send(t(ctx, "toggle.usage", name="bienvenue mp"))
+            await replies.reply(ctx, "toggle.usage", kind="error",
+                                name="bienvenue mp")
 
     @bienvenue.command(name="mpmessage",
                        description="Message du MP de bienvenue (vide = défaut).")
@@ -127,10 +129,12 @@ class Welcome(commands.Cog):
         set_key: str, reset_key: str,
     ) -> None:
         if texte is not None and len(texte) > MAX_LEN:
-            await ctx.send(t(ctx, "welcome.too_long", max=MAX_LEN))
+            await replies.reply(ctx, "welcome.too_long", kind="error",
+                                max=MAX_LEN)
             return
         storage.set_setting(ctx.guild.id, key, texte.strip() if texte else None)
-        await ctx.send(t(ctx, reset_key if not texte else set_key))
+        await replies.reply(ctx, reset_key if not texte else set_key,
+                            kind="success")
 
     async def _show_config(self, ctx: commands.Context) -> None:
         gid = ctx.guild.id

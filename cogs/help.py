@@ -3,7 +3,7 @@ import discord
 from discord.ext import commands
 
 import config
-from utils import categories
+from utils import categories, replies
 from utils.i18n import t
 
 _ORDER = categories.ORDER
@@ -214,7 +214,8 @@ class Help(commands.Cog):
             name = commande.lower().lstrip(config.PREFIX).strip()
             command = self.bot.get_command(name)
             if command is None or self._is_hidden(command):
-                await ctx.send(t(ctx, "help.not_found", cmd=commande))
+                await replies.reply(ctx, "help.not_found", kind="error",
+                                    cmd=commande)
                 return
             await ctx.send(embed=self._command_detail(ctx, command))
             return
@@ -222,7 +223,7 @@ class Help(commands.Cog):
         # Aide générale paginée.
         pages = self._build_pages(ctx)
         if not pages:
-            await ctx.send(t(ctx, "help.no_cmd"))
+            await replies.reply(ctx, "help.no_cmd", kind="error")
             return
         view = HelpView(pages, ctx.author.id, ctx.guild)
         await ctx.send(embed=pages[0], view=view)

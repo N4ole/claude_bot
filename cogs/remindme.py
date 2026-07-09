@@ -85,7 +85,7 @@ class RemindMe(commands.Cog):
         else:
             # Repli : jamais d'erreur silencieuse pour l'utilisateur
             # (errorreport prévient déjà les owners avec la traceback).
-            await ctx.send(t(ctx, "error.generic"))
+            await replies.reply(ctx, "error.generic", kind="error")
 
 
 async def setup(bot: commands.Bot) -> None:

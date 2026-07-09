@@ -2,6 +2,7 @@
 import discord
 from discord.ext import commands
 
+from utils import replies
 from utils.i18n import t
 
 _NUMBER_EMOJIS = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"]
@@ -25,7 +26,7 @@ class Poll(commands.Cog):
         options = [p for p in parts[1:] if p]
 
         if len(options) > 10:
-            await ctx.send(t(ctx, "poll.too_many"))
+            await replies.reply(ctx, "poll.too_many", kind="error")
             return
 
         embed = discord.Embed(
