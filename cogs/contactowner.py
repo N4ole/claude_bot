@@ -7,7 +7,7 @@ et d'une invitation vers celui-ci.
 import discord
 from discord.ext import commands
 
-from utils import checks
+from utils import checks, replies
 from utils.i18n import t
 
 
@@ -89,9 +89,9 @@ class ContactOwner(commands.Cog):
                 failed += 1
 
         if sent:
-            await ctx.send(t(ctx, "co.sent", count=sent))
+            await replies.reply(ctx, "co.sent", kind="success", count=sent)
         else:
-            await ctx.send(t(ctx, "co.failed"))
+            await replies.reply(ctx, "co.failed", kind="error")
 
 
 async def setup(bot: commands.Bot) -> None:

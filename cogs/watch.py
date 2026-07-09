@@ -12,8 +12,8 @@ from datetime import datetime, timezone
 import discord
 from discord.ext import commands
 
-from utils import checks, storage
-from utils.i18n import t
+from utils import checks, replies, storage
+from utils.i18n import t, t_lang
 
 CATEGORY_NAME = "WATCHED USER"
 
@@ -106,7 +106,8 @@ class Watch(commands.Cog):
         # Déjà surveillé activement (salon connu et existant) : rien à faire.
         active = self._log_channel(guild, member.id)
         if active is not None:
-            await ctx.send(t(ctx, "watch.already", user=member.mention))
+            await replies.reply(ctx, "watch.already", kind="warn",
+                                user=member.mention)
             return
 
         # Un salon de surveillance existe déjà (surveillance précédente) :
@@ -115,10 +116,8 @@ class Watch(commands.Cog):
         if existing is not None:
             storage.add_watch(guild.id, member.id, existing.id)
             await existing.send(t(guild, "watch.resume", user=member.mention))
-            await ctx.send(
-                t(ctx, "watch.resumed", user=member.mention,
-                  channel=existing.mention)
-            )
+            await replies.reply(ctx, "watch.resumed", kind="success",
+                                user=member.mention, channel=existing.mention)
             return
 
         # Récupère (ou crée) la catégorie « WATCHED USER ».
@@ -139,9 +138,8 @@ class Watch(commands.Cog):
         )
 
         storage.add_watch(guild.id, member.id, channel.id)
-        await ctx.send(
-            t(ctx, "watch.done", user=member.mention, channel=channel.mention)
-        )
+        await replies.reply(ctx, "watch.done", kind="success",
+                            user=member.mention, channel=channel.mention)
 
     @commands.hybrid_command(
         name="unwatch",
@@ -150,12 +148,14 @@ class Watch(commands.Cog):
     @checks.admin()
     async def unwatch(self, ctx: commands.Context, member: discord.Member) -> None:
         if storage.get_channel_id(ctx.guild.id, member.id) is None:
-            await ctx.send(t(ctx, "unwatch.not", user=member.mention))
+            await replies.reply(ctx, "unwatch.not", kind="warn",
+                                user=member.mention)
             return
 
         storage.remove_watch(ctx.guild.id, member.id)
         self._voice_since.pop((ctx.guild.id, member.id), None)
-        await ctx.send(t(ctx, "unwatch.done", user=member.mention))
+        await replies.reply(ctx, "unwatch.done", kind="success",
+                            user=member.mention)
 
     @commands.hybrid_command(
         name="watchlist",
@@ -165,24 +165,24 @@ class Watch(commands.Cog):
     async def watchlist(self, ctx: commands.Context) -> None:
         watches = storage.get_guild_watches(ctx.guild.id)
         if not watches:
-            await ctx.send(t(ctx, "watchlist.empty"))
+            await replies.reply(ctx, "watchlist.empty", kind="info")
             return
 
-        lines = []
-        for user_id, channel_id in watches.items():
-            channel = ctx.guild.get_channel(channel_id)
-            target = (
-                channel.mention if channel
-                else t(ctx, "watch.deleted", id=channel_id)
-            )
-            lines.append(f"• <@{user_id}> → {target}")
+        def lines(lang: str) -> str:
+            out = []
+            for user_id, channel_id in watches.items():
+                channel = ctx.guild.get_channel(channel_id)
+                target = (channel.mention if channel
+                          else t_lang(lang, "watch.deleted", id=channel_id))
+                out.append(f"• <@{user_id}> → {target}")
+            return "\n".join(out)
 
-        embed = discord.Embed(
-            title=t(ctx, "watchlist.title"),
-            description="\n".join(lines),
-            color=discord.Color.dark_red(),
+        spec = (
+            replies.Embed("info", color=discord.Color.dark_red())
+            .title("watchlist.title")
+            .desc_fn(lines)
         )
-        await ctx.send(embed=embed)
+        await replies.reply_rich(ctx, spec)
 
     # ------------------------------------------------------------------ #
     # Listeners

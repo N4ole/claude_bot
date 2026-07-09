@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 import discord
 from discord.ext import commands
 
-from utils import checks, storage
+from utils import checks, replies, storage
 from utils.duration import human, parse_duration
 from utils.i18n import t
 
@@ -141,10 +141,11 @@ class Giveaway(commands.Cog):
     ) -> None:
         delta = parse_duration(duree)
         if delta is None:
-            await ctx.send(t(ctx, "gw.bad_duration"))
+            await replies.reply(ctx, "gw.bad_duration", kind="error")
             return
         if gagnants < 1 or gagnants > MAX_WINNERS:
-            await ctx.send(t(ctx, "gw.bad_winners", max=MAX_WINNERS))
+            await replies.reply(ctx, "gw.bad_winners", kind="error",
+                                max=MAX_WINNERS)
             return
 
         end = discord.utils.utcnow() + delta
@@ -173,8 +174,8 @@ class Giveaway(commands.Cog):
         self.bot.loop.create_task(self._schedule_end(message.id))
 
         if ctx.interaction is not None:
-            await ctx.send(t(ctx, "gw.started", link=message.jump_url),
-                           ephemeral=True)
+            await replies.reply(ctx, "gw.started", kind="success",
+                                ephemeral=True, link=message.jump_url)
 
     @commands.hybrid_command(
         name="gend",
@@ -183,18 +184,18 @@ class Giveaway(commands.Cog):
     @checks.admin()
     async def gend(self, ctx: commands.Context, message_id: str) -> None:
         if not message_id.isdigit():
-            await ctx.send(t(ctx, "gw.bad_id"))
+            await replies.reply(ctx, "gw.bad_id", kind="error")
             return
         mid = int(message_id)
         gw = storage.get_giveaway(mid)
         if gw is None or gw["guild_id"] != ctx.guild.id:
-            await ctx.send(t(ctx, "gw.not_found"))
+            await replies.reply(ctx, "gw.not_found", kind="error")
             return
         if gw.get("ended"):
-            await ctx.send(t(ctx, "gw.already_ended"))
+            await replies.reply(ctx, "gw.already_ended", kind="warn")
             return
         await self._end_giveaway(mid)
-        await ctx.send(t(ctx, "gw.force_ended"))
+        await replies.reply(ctx, "gw.force_ended", kind="success")
 
     @commands.hybrid_command(
         name="greroll",
@@ -203,27 +204,27 @@ class Giveaway(commands.Cog):
     @checks.admin()
     async def greroll(self, ctx: commands.Context, message_id: str) -> None:
         if not message_id.isdigit():
-            await ctx.send(t(ctx, "gw.bad_id"))
+            await replies.reply(ctx, "gw.bad_id", kind="error")
             return
         mid = int(message_id)
         gw = storage.get_giveaway(mid)
         if gw is None or gw["guild_id"] != ctx.guild.id:
-            await ctx.send(t(ctx, "gw.not_found"))
+            await replies.reply(ctx, "gw.not_found", kind="error")
             return
         if not gw.get("ended"):
-            await ctx.send(t(ctx, "gw.not_ended"))
+            await replies.reply(ctx, "gw.not_ended", kind="warn")
             return
         message = await self._fetch_message(gw)
         if message is None:
-            await ctx.send(t(ctx, "gw.msg_gone"))
+            await replies.reply(ctx, "gw.msg_gone", kind="error")
             return
         participants = await self._participants(message)
         if not participants:
-            await ctx.send(t(ctx, "gw.no_participant"))
+            await replies.reply(ctx, "gw.no_participant", kind="warn")
             return
         winner = random.choice(participants)
-        await ctx.send(t(ctx, "gw.reroll", winner=winner.mention,
-                         prize=gw["prize"]))
+        await replies.reply(ctx, "gw.reroll", kind="success",
+                            winner=winner.mention, prize=gw["prize"])
 
 
 async def setup(bot: commands.Bot) -> None:
