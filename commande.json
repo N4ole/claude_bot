@@ -1,0 +1,925 @@
+{
+  "bot": "Watcher",
+  "version": "0.20",
+  "prefixe_defaut": "!",
+  "total": 79,
+  "commandes": [
+    {
+      "nom": "8ball",
+      "description": "Pose une question à la boule magique.",
+      "categorie": "🎲 Utilitaire",
+      "permission": "Aucune",
+      "arguments": [
+        {
+          "nom": "question",
+          "obligatoire": true
+        }
+      ]
+    },
+    {
+      "nom": "addowner",
+      "description": "Ajoute un owner au bot.",
+      "categorie": "👑 Owner du bot",
+      "permission": "Owner du bot",
+      "arguments": [
+        {
+          "nom": "user",
+          "obligatoire": true
+        }
+      ]
+    },
+    {
+      "nom": "analyse",
+      "description": "Graphique d'activité du serveur sur 7 jours.",
+      "categorie": "🛡️ Modération",
+      "permission": "Administrateur",
+      "arguments": []
+    },
+    {
+      "nom": "antibot",
+      "description": "Active/désactive le blocage des bots (on/off).",
+      "categorie": "🛡️ Modération",
+      "permission": "Administrateur",
+      "arguments": [
+        {
+          "nom": "etat",
+          "obligatoire": true
+        }
+      ]
+    },
+    {
+      "nom": "antiinsulte",
+      "description": "Active/désactive la suppression des insultes (on/off).",
+      "categorie": "🛡️ Modération",
+      "permission": "Administrateur",
+      "arguments": [
+        {
+          "nom": "etat",
+          "obligatoire": true
+        }
+      ]
+    },
+    {
+      "nom": "antipub",
+      "description": "Active/désactive la suppression des invitations Discord (on/off).",
+      "categorie": "🛡️ Modération",
+      "permission": "Administrateur",
+      "arguments": [
+        {
+          "nom": "etat",
+          "obligatoire": true
+        }
+      ]
+    },
+    {
+      "nom": "antiraid",
+      "description": "Active/désactive le captcha à l'arrivée (on/off).",
+      "categorie": "🛡️ Modération",
+      "permission": "Administrateur",
+      "arguments": [
+        {
+          "nom": "etat",
+          "obligatoire": true
+        }
+      ]
+    },
+    {
+      "nom": "antispam",
+      "description": "Active/désactive l'anti-spam (on/off).",
+      "categorie": "🛡️ Modération",
+      "permission": "Administrateur",
+      "arguments": [
+        {
+          "nom": "etat",
+          "obligatoire": true
+        }
+      ]
+    },
+    {
+      "nom": "avatar",
+      "description": "Affiche l'avatar d'un utilisateur.",
+      "categorie": "📊 Infos",
+      "permission": "Aucune",
+      "arguments": [
+        {
+          "nom": "member",
+          "obligatoire": false
+        }
+      ]
+    },
+    {
+      "nom": "ban",
+      "description": "Bannit un utilisateur (raison et durée optionnelle).",
+      "categorie": "🛡️ Modération",
+      "permission": "Bannir des membres",
+      "arguments": [
+        {
+          "nom": "cible",
+          "obligatoire": true
+        },
+        {
+          "nom": "duree",
+          "obligatoire": false
+        },
+        {
+          "nom": "raison",
+          "obligatoire": false
+        }
+      ]
+    },
+    {
+      "nom": "banserv",
+      "description": "Blackliste un serveur (le bot le quitte et le refuse).",
+      "categorie": "👑 Owner du bot",
+      "permission": "Owner du bot",
+      "arguments": [
+        {
+          "nom": "guild_id",
+          "obligatoire": true
+        }
+      ]
+    },
+    {
+      "nom": "banservs",
+      "description": "Liste les serveurs blacklistés.",
+      "categorie": "👑 Owner du bot",
+      "permission": "Owner du bot",
+      "arguments": []
+    },
+    {
+      "nom": "bienvenue",
+      "description": "Configure les messages de bienvenue/au revoir (et le MP).",
+      "categorie": "🛡️ Modération",
+      "permission": "Administrateur",
+      "arguments": []
+    },
+    {
+      "nom": "bienvenue aurevoir",
+      "description": "Message de départ (vide = message par défaut).",
+      "categorie": "🛡️ Modération",
+      "permission": "Administrateur",
+      "arguments": [
+        {
+          "nom": "texte",
+          "obligatoire": false
+        }
+      ]
+    },
+    {
+      "nom": "bienvenue config",
+      "description": "Affiche la configuration de bienvenue.",
+      "categorie": "🛡️ Modération",
+      "permission": "Administrateur",
+      "arguments": []
+    },
+    {
+      "nom": "bienvenue message",
+      "description": "Message d'arrivée (vide = message par défaut).",
+      "categorie": "🛡️ Modération",
+      "permission": "Administrateur",
+      "arguments": [
+        {
+          "nom": "texte",
+          "obligatoire": false
+        }
+      ]
+    },
+    {
+      "nom": "bienvenue mp",
+      "description": "Active/désactive le MP de bienvenue (on/off).",
+      "categorie": "🛡️ Modération",
+      "permission": "Administrateur",
+      "arguments": [
+        {
+          "nom": "etat",
+          "obligatoire": true
+        }
+      ]
+    },
+    {
+      "nom": "bienvenue mpmessage",
+      "description": "Message du MP de bienvenue (vide = défaut).",
+      "categorie": "🛡️ Modération",
+      "permission": "Administrateur",
+      "arguments": [
+        {
+          "nom": "texte",
+          "obligatoire": false
+        }
+      ]
+    },
+    {
+      "nom": "bienvenue salon",
+      "description": "Salon des messages arrivée/départ (vide = off).",
+      "categorie": "🛡️ Modération",
+      "permission": "Administrateur",
+      "arguments": [
+        {
+          "nom": "salon",
+          "obligatoire": false
+        }
+      ]
+    },
+    {
+      "nom": "bonjour",
+      "description": "Le bot vous dit bonjour.",
+      "categorie": "🔧 Général",
+      "permission": "Aucune",
+      "arguments": []
+    },
+    {
+      "nom": "botinfo",
+      "description": "Affiche des informations sur le bot.",
+      "categorie": "📊 Infos",
+      "permission": "Aucune",
+      "arguments": []
+    },
+    {
+      "nom": "bump",
+      "description": "Diffuse ton serveur aux autres serveurs participants.",
+      "categorie": "🎲 Utilitaire",
+      "permission": "Aucune",
+      "arguments": []
+    },
+    {
+      "nom": "bumpenable",
+      "description": "Active/désactive le système de bump (choix du salon).",
+      "categorie": "🎲 Utilitaire",
+      "permission": "Aucune",
+      "arguments": [
+        {
+          "nom": "etat",
+          "obligatoire": false
+        },
+        {
+          "nom": "salon",
+          "obligatoire": false
+        }
+      ]
+    },
+    {
+      "nom": "central",
+      "description": "Tableau de bord global du bot (owners).",
+      "categorie": "👑 Owner du bot",
+      "permission": "Owner du bot",
+      "arguments": []
+    },
+    {
+      "nom": "choose",
+      "description": "Choisit une option parmi plusieurs (séparées par « | »).",
+      "categorie": "🎲 Utilitaire",
+      "permission": "Aucune",
+      "arguments": [
+        {
+          "nom": "options",
+          "obligatoire": true
+        }
+      ]
+    },
+    {
+      "nom": "clear",
+      "description": "Supprime un nombre de messages du salon (max 100).",
+      "categorie": "🛡️ Modération",
+      "permission": "Gérer les messages",
+      "arguments": [
+        {
+          "nom": "nombre",
+          "obligatoire": true
+        }
+      ]
+    },
+    {
+      "nom": "closeticket",
+      "description": "Ferme le ticket courant et en retire le membre.",
+      "categorie": "🛡️ Modération",
+      "permission": "Administrateur",
+      "arguments": []
+    },
+    {
+      "nom": "coinflip",
+      "description": "Lance une pièce : pile ou face.",
+      "categorie": "🎲 Utilitaire",
+      "permission": "Aucune",
+      "arguments": [],
+      "alias": [
+        "pileouface"
+      ]
+    },
+    {
+      "nom": "confine",
+      "description": "Isole un utilisateur dans un salon de confinement.",
+      "categorie": "🛡️ Modération",
+      "permission": "Administrateur",
+      "arguments": [
+        {
+          "nom": "member",
+          "obligatoire": true
+        }
+      ]
+    },
+    {
+      "nom": "contactowner",
+      "description": "Contacte les owners du bot (réservé au propriétaire du serveur).",
+      "categorie": "👑 Propriétaire de serveur",
+      "permission": "Propriétaire du serveur",
+      "arguments": [
+        {
+          "nom": "message",
+          "obligatoire": true
+        }
+      ]
+    },
+    {
+      "nom": "delnote",
+      "description": "Supprime une note du dossier d'un utilisateur (par numéro).",
+      "categorie": "🛡️ Modération",
+      "permission": "Administrateur",
+      "arguments": [
+        {
+          "nom": "member",
+          "obligatoire": true
+        },
+        {
+          "nom": "numero",
+          "obligatoire": true
+        }
+      ]
+    },
+    {
+      "nom": "export",
+      "description": "Exporte le journal de modération (txt/csv/pdf) sur une période.",
+      "categorie": "👑 Propriétaire de serveur",
+      "permission": "Propriétaire du serveur",
+      "arguments": [
+        {
+          "nom": "format",
+          "obligatoire": true
+        },
+        {
+          "nom": "periode",
+          "obligatoire": false
+        }
+      ]
+    },
+    {
+      "nom": "gend",
+      "description": "Termine immédiatement un giveaway (par ID de message).",
+      "categorie": "🎲 Utilitaire",
+      "permission": "Administrateur",
+      "arguments": [
+        {
+          "nom": "message_id",
+          "obligatoire": true
+        }
+      ]
+    },
+    {
+      "nom": "giveaway",
+      "description": "Lance un giveaway (ex: giveaway 1h 1 Nitro).",
+      "categorie": "🎲 Utilitaire",
+      "permission": "Administrateur",
+      "arguments": [
+        {
+          "nom": "duree",
+          "obligatoire": true
+        },
+        {
+          "nom": "gagnants",
+          "obligatoire": true
+        },
+        {
+          "nom": "prix",
+          "obligatoire": true
+        }
+      ]
+    },
+    {
+      "nom": "greroll",
+      "description": "Retire un nouveau gagnant d'un giveaway terminé.",
+      "categorie": "🎲 Utilitaire",
+      "permission": "Administrateur",
+      "arguments": [
+        {
+          "nom": "message_id",
+          "obligatoire": true
+        }
+      ]
+    },
+    {
+      "nom": "help",
+      "description": "Aide générale, ou détail d'une commande : help [commande].",
+      "categorie": "🔧 Général",
+      "permission": "Aucune",
+      "arguments": [
+        {
+          "nom": "commande",
+          "obligatoire": false
+        }
+      ]
+    },
+    {
+      "nom": "helpowner",
+      "description": "Liste les commandes réservées aux owners du bot.",
+      "categorie": "👑 Owner du bot",
+      "permission": "Owner du bot",
+      "arguments": [
+        {
+          "nom": "commande",
+          "obligatoire": false
+        }
+      ]
+    },
+    {
+      "nom": "invite",
+      "description": "Génère une invitation vers un serveur du bot.",
+      "categorie": "👑 Owner du bot",
+      "permission": "Owner du bot",
+      "arguments": [
+        {
+          "nom": "server_id",
+          "obligatoire": true
+        }
+      ]
+    },
+    {
+      "nom": "kick",
+      "description": "Expulse un utilisateur du serveur (avec raison).",
+      "categorie": "🛡️ Modération",
+      "permission": "Expulser des membres",
+      "arguments": [
+        {
+          "nom": "member",
+          "obligatoire": true
+        },
+        {
+          "nom": "raison",
+          "obligatoire": false
+        }
+      ]
+    },
+    {
+      "nom": "langue",
+      "description": "Choisit la langue du bot pour ce serveur (fr/en).",
+      "categorie": "🛡️ Modération",
+      "permission": "Administrateur",
+      "arguments": [
+        {
+          "nom": "langue",
+          "obligatoire": false
+        }
+      ]
+    },
+    {
+      "nom": "leave",
+      "description": "Fait quitter un serveur au bot (par ID).",
+      "categorie": "👑 Owner du bot",
+      "permission": "Owner du bot",
+      "arguments": [
+        {
+          "nom": "guild_id",
+          "obligatoire": true
+        }
+      ]
+    },
+    {
+      "nom": "logs",
+      "description": "Active/désactive les logs Discord par type, ou `status`.",
+      "categorie": "🛡️ Modération",
+      "permission": "Administrateur",
+      "arguments": [
+        {
+          "nom": "etat",
+          "obligatoire": true
+        },
+        {
+          "nom": "categorie",
+          "obligatoire": false
+        }
+      ]
+    },
+    {
+      "nom": "membercount",
+      "description": "Affiche le nombre de membres du serveur.",
+      "categorie": "📊 Infos",
+      "permission": "Aucune",
+      "arguments": []
+    },
+    {
+      "nom": "move",
+      "description": "Déplace un membre vers un autre salon vocal.",
+      "categorie": "🛡️ Modération",
+      "permission": "Déplacer des membres",
+      "arguments": [
+        {
+          "nom": "member",
+          "obligatoire": true
+        },
+        {
+          "nom": "salon",
+          "obligatoire": true
+        }
+      ]
+    },
+    {
+      "nom": "mute",
+      "description": "Coupe la parole à un utilisateur pour une durée (ex: 5m, 1h30m).",
+      "categorie": "🛡️ Modération",
+      "permission": "Administrateur",
+      "arguments": [
+        {
+          "nom": "member",
+          "obligatoire": true
+        },
+        {
+          "nom": "duree",
+          "obligatoire": true
+        }
+      ]
+    },
+    {
+      "nom": "mutecasque",
+      "description": "Coupe le son d'un membre en vocal (server deafen).",
+      "categorie": "🛡️ Modération",
+      "permission": "Rendre sourd des membres",
+      "arguments": [
+        {
+          "nom": "member",
+          "obligatoire": true
+        }
+      ]
+    },
+    {
+      "nom": "mutemicro",
+      "description": "Coupe le micro d'un membre en vocal (server mute).",
+      "categorie": "🛡️ Modération",
+      "permission": "Rendre muet des membres",
+      "arguments": [
+        {
+          "nom": "member",
+          "obligatoire": true
+        }
+      ]
+    },
+    {
+      "nom": "note",
+      "description": "Ajoute une note au dossier d'un utilisateur (userstatus).",
+      "categorie": "🛡️ Modération",
+      "permission": "Administrateur",
+      "arguments": [
+        {
+          "nom": "member",
+          "obligatoire": true
+        },
+        {
+          "nom": "texte",
+          "obligatoire": true
+        }
+      ]
+    },
+    {
+      "nom": "owners",
+      "description": "Liste les owners du bot.",
+      "categorie": "👑 Owner du bot",
+      "permission": "Owner du bot",
+      "arguments": []
+    },
+    {
+      "nom": "ping",
+      "description": "Affiche la latence du bot.",
+      "categorie": "🔧 Général",
+      "permission": "Aucune",
+      "arguments": []
+    },
+    {
+      "nom": "poll",
+      "description": "Crée un sondage. Options séparées par des « | » (facultatif).",
+      "categorie": "🎲 Utilitaire",
+      "permission": "Aucune",
+      "arguments": [
+        {
+          "nom": "question",
+          "obligatoire": true
+        }
+      ]
+    },
+    {
+      "nom": "prefixe",
+      "description": "Affiche ou change le préfixe du bot sur ce serveur.",
+      "categorie": "👑 Propriétaire de serveur",
+      "permission": "Propriétaire du serveur",
+      "arguments": [
+        {
+          "nom": "nouveau",
+          "obligatoire": false
+        }
+      ]
+    },
+    {
+      "nom": "protections",
+      "description": "Affiche l'état des protections du serveur.",
+      "categorie": "🛡️ Modération",
+      "permission": "Administrateur",
+      "arguments": []
+    },
+    {
+      "nom": "reload",
+      "description": "Recharge un cog à chaud (ou 'all' pour tout recharger).",
+      "categorie": "👑 Owner du bot",
+      "permission": "Owner du bot",
+      "arguments": [
+        {
+          "nom": "cog",
+          "obligatoire": false,
+          "defaut": "all"
+        }
+      ]
+    },
+    {
+      "nom": "remindme",
+      "description": "Te rappelle un message en MP après un délai (ex: 1h30m).",
+      "categorie": "🎲 Utilitaire",
+      "permission": "Aucune",
+      "arguments": [
+        {
+          "nom": "message",
+          "obligatoire": true
+        },
+        {
+          "nom": "temps",
+          "obligatoire": true
+        }
+      ]
+    },
+    {
+      "nom": "respond",
+      "description": "Répond en MP à un propriétaire de serveur, ou `all` pour une annonce.",
+      "categorie": "👑 Owner du bot",
+      "permission": "Owner du bot",
+      "arguments": [
+        {
+          "nom": "cible",
+          "obligatoire": true
+        },
+        {
+          "nom": "message",
+          "obligatoire": true
+        }
+      ]
+    },
+    {
+      "nom": "rmowner",
+      "description": "Retire un owner du bot.",
+      "categorie": "👑 Owner du bot",
+      "permission": "Owner du bot",
+      "arguments": [
+        {
+          "nom": "user",
+          "obligatoire": true
+        }
+      ]
+    },
+    {
+      "nom": "roll",
+      "description": "Lance des dés au format NdM (ex: 2d6, d20).",
+      "categorie": "🎲 Utilitaire",
+      "permission": "Aucune",
+      "arguments": [
+        {
+          "nom": "des",
+          "obligatoire": false,
+          "defaut": "1d6"
+        }
+      ]
+    },
+    {
+      "nom": "say",
+      "description": "Fait parler le bot dans le salon courant.",
+      "categorie": "👑 Owner du bot",
+      "permission": "Owner du bot",
+      "arguments": [
+        {
+          "nom": "message",
+          "obligatoire": true
+        }
+      ]
+    },
+    {
+      "nom": "serverinfo",
+      "description": "Affiche les informations du serveur.",
+      "categorie": "📊 Infos",
+      "permission": "Aucune",
+      "arguments": []
+    },
+    {
+      "nom": "serveurs",
+      "description": "Détaille chaque serveur du bot (une page par serveur).",
+      "categorie": "👑 Owner du bot",
+      "permission": "Owner du bot",
+      "arguments": []
+    },
+    {
+      "nom": "shutdown",
+      "description": "Éteint le bot.",
+      "categorie": "👑 Owner du bot",
+      "permission": "Owner du bot",
+      "arguments": []
+    },
+    {
+      "nom": "status",
+      "description": "Version, ping et nombre de serveurs.",
+      "categorie": "🔧 Général",
+      "permission": "Aucune",
+      "arguments": []
+    },
+    {
+      "nom": "ticket",
+      "description": "Crée un panneau de ticket (bouton) dans un salon.",
+      "categorie": "🛡️ Modération",
+      "permission": "Administrateur",
+      "arguments": [
+        {
+          "nom": "salon",
+          "obligatoire": true
+        },
+        {
+          "nom": "message",
+          "obligatoire": true
+        }
+      ]
+    },
+    {
+      "nom": "unban",
+      "description": "Débannit un utilisateur par son ID.",
+      "categorie": "🛡️ Modération",
+      "permission": "Bannir des membres",
+      "arguments": [
+        {
+          "nom": "utilisateur",
+          "obligatoire": true
+        },
+        {
+          "nom": "raison",
+          "obligatoire": false
+        }
+      ]
+    },
+    {
+      "nom": "unbanserv",
+      "description": "Retire un serveur de la blacklist.",
+      "categorie": "👑 Owner du bot",
+      "permission": "Owner du bot",
+      "arguments": [
+        {
+          "nom": "guild_id",
+          "obligatoire": true
+        }
+      ]
+    },
+    {
+      "nom": "unconfine",
+      "description": "Libère un utilisateur du confinement.",
+      "categorie": "🛡️ Modération",
+      "permission": "Administrateur",
+      "arguments": [
+        {
+          "nom": "member",
+          "obligatoire": true
+        }
+      ]
+    },
+    {
+      "nom": "unmute",
+      "description": "Rend la parole à un utilisateur mute.",
+      "categorie": "🛡️ Modération",
+      "permission": "Administrateur",
+      "arguments": [
+        {
+          "nom": "member",
+          "obligatoire": true
+        }
+      ]
+    },
+    {
+      "nom": "unmutecasque",
+      "description": "Rend le son à un membre en vocal.",
+      "categorie": "🛡️ Modération",
+      "permission": "Rendre sourd des membres",
+      "arguments": [
+        {
+          "nom": "member",
+          "obligatoire": true
+        }
+      ]
+    },
+    {
+      "nom": "unmutemicro",
+      "description": "Rend le micro à un membre en vocal.",
+      "categorie": "🛡️ Modération",
+      "permission": "Rendre muet des membres",
+      "arguments": [
+        {
+          "nom": "member",
+          "obligatoire": true
+        }
+      ]
+    },
+    {
+      "nom": "unwarn",
+      "description": "Retire un avertissement à un utilisateur.",
+      "categorie": "🛡️ Modération",
+      "permission": "Administrateur",
+      "arguments": [
+        {
+          "nom": "member",
+          "obligatoire": true
+        }
+      ]
+    },
+    {
+      "nom": "unwatch",
+      "description": "Arrête la surveillance d'un utilisateur.",
+      "categorie": "🛡️ Modération",
+      "permission": "Administrateur",
+      "arguments": [
+        {
+          "nom": "member",
+          "obligatoire": true
+        }
+      ]
+    },
+    {
+      "nom": "uptime",
+      "description": "Affiche depuis combien de temps le bot tourne.",
+      "categorie": "🔧 Général",
+      "permission": "Aucune",
+      "arguments": []
+    },
+    {
+      "nom": "userinfo",
+      "description": "Affiche les informations d'un utilisateur.",
+      "categorie": "📊 Infos",
+      "permission": "Aucune",
+      "arguments": [
+        {
+          "nom": "member",
+          "obligatoire": false
+        }
+      ]
+    },
+    {
+      "nom": "userstatus",
+      "description": "Affiche l'historique des sanctions d'un utilisateur.",
+      "categorie": "🛡️ Modération",
+      "permission": "Administrateur",
+      "arguments": [
+        {
+          "nom": "member",
+          "obligatoire": true
+        }
+      ]
+    },
+    {
+      "nom": "warn",
+      "description": "Avertit un utilisateur (sanction progressive).",
+      "categorie": "🛡️ Modération",
+      "permission": "Administrateur",
+      "arguments": [
+        {
+          "nom": "member",
+          "obligatoire": true
+        }
+      ]
+    },
+    {
+      "nom": "warns",
+      "description": "Affiche le nombre d'avertissements d'un utilisateur.",
+      "categorie": "🛡️ Modération",
+      "permission": "Administrateur",
+      "arguments": [
+        {
+          "nom": "member",
+          "obligatoire": true
+        }
+      ]
+    },
+    {
+      "nom": "watch",
+      "description": "Surveille un utilisateur et journalise son activité.",
+      "categorie": "🛡️ Modération",
+      "permission": "Administrateur",
+      "arguments": [
+        {
+          "nom": "member",
+          "obligatoire": true
+        }
+      ]
+    },
+    {
+      "nom": "watchlist",
+      "description": "Liste les utilisateurs actuellement surveillés.",
+      "categorie": "🛡️ Modération",
+      "permission": "Administrateur",
+      "arguments": []
+    }
+  ]
+}
