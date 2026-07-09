@@ -13,7 +13,7 @@ from datetime import datetime, timedelta, timezone
 import discord
 from discord.ext import commands
 
-from utils import checks, storage
+from utils import checks, replies, storage
 from utils.i18n import t
 
 log = logging.getLogger(__name__)
@@ -83,9 +83,10 @@ class Warn(commands.Cog):
     async def _apply_sanction(
         self, ctx: commands.Context, member: discord.Member, level: int
     ) -> str:
-        """Applique la sanction du niveau et renvoie sa description."""
+        """Applique la sanction du niveau et renvoie la **clé i18n** décrivant
+        la sanction (traduite à l'affichage)."""
         if level == 1:
-            return t(ctx, "warn.s1")
+            return "warn.s1"
 
         if level == 2:
             try:
@@ -94,14 +95,14 @@ class Warn(commands.Cog):
                 )
             except discord.HTTPException:
                 pass
-            return t(ctx, "warn.s2")
+            return "warn.s2"
 
         if level == 3:
             try:
                 await member.timeout(timedelta(hours=1), reason="Warn 3")
             except discord.HTTPException:
                 pass
-            return t(ctx, "warn.s3")
+            return "warn.s3"
 
         if level == 4:
             confine_cog = self.bot.get_cog("Confine")
@@ -110,14 +111,14 @@ class Warn(commands.Cog):
                 # et reprise automatiquement après un redémarrage du bot.
                 until = datetime.now(timezone.utc) + CONFINE_DURATION
                 await confine_cog.apply_temp_confinement(ctx.guild, member, until)
-            return t(ctx, "warn.s4")
+            return "warn.s4"
 
         # Niveau >= MAX_WARN : bannissement.
         try:
             await member.ban(reason="Warn 5 — bannissement permanent")
         except discord.HTTPException:
-            return t(ctx, "warn.s5_fail")
-        return t(ctx, "warn.s5")
+            return "warn.s5_fail"
+        return "warn.s5"
 
     # ------------------------------------------------------------------ #
     # Commandes
@@ -130,20 +131,19 @@ class Warn(commands.Cog):
     async def warn(self, ctx: commands.Context, member: discord.Member) -> None:
         level = storage.add_warn(ctx.guild.id, member.id)
         await self._sync_warn_role(member, level)
-        sanction = await self._apply_sanction(ctx, member, level)
+        sanction_key = await self._apply_sanction(ctx, member, level)
         storage.add_modlog(
             ctx.guild.id, member.id, "warn", ctx.author.id,
-            detail=f"warn {level}/{MAX_WARN} — {sanction}",
+            detail=f"warn {level}/{MAX_WARN} — {t(ctx, sanction_key)}",
         )
 
-        embed = discord.Embed(
-            title=t(ctx, "warn.title"),
-            description=t(ctx, "warn.desc", user=member.mention,
-                          level=level, max=MAX_WARN),
-            color=discord.Color.red(),
+        spec = (
+            replies.Embed("error", color=discord.Color.red())
+            .title("warn.title")
+            .desc("warn.desc", user=member.mention, level=level, max=MAX_WARN)
+            .field_t("warn.field", sanction_key, inline=False)
         )
-        embed.add_field(name=t(ctx, "warn.field"), value=sanction, inline=False)
-        await ctx.send(embed=embed)
+        await replies.reply_rich(ctx, spec)
 
     @commands.hybrid_command(
         name="unwarn",
@@ -153,7 +153,8 @@ class Warn(commands.Cog):
     async def unwarn(self, ctx: commands.Context, member: discord.Member) -> None:
         current = storage.get_warns(ctx.guild.id, member.id)
         if current <= 0:
-            await ctx.send(t(ctx, "unwarn.none", user=member.mention))
+            await replies.reply(ctx, "unwarn.none", kind="warn",
+                                user=member.mention)
             return
 
         new_level = current - 1
@@ -169,10 +170,8 @@ class Warn(commands.Cog):
         if confine_cog is not None:
             await confine_cog.remove_confinement(ctx.guild, member)
 
-        await ctx.send(
-            t(ctx, "unwarn.done", user=member.mention,
-              level=new_level, max=MAX_WARN)
-        )
+        await replies.reply(ctx, "unwarn.done", kind="success",
+                            user=member.mention, level=new_level, max=MAX_WARN)
 
     @commands.hybrid_command(
         name="warns",
@@ -181,9 +180,8 @@ class Warn(commands.Cog):
     @checks.admin()
     async def warns(self, ctx: commands.Context, member: discord.Member) -> None:
         count = storage.get_warns(ctx.guild.id, member.id)
-        await ctx.send(
-            t(ctx, "warns.count", user=member.mention, count=count, max=MAX_WARN)
-        )
+        await replies.reply(ctx, "warns.count", kind="info",
+                            user=member.mention, count=count, max=MAX_WARN)
 
 
 async def setup(bot: commands.Bot) -> None:

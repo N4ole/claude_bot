@@ -11,7 +11,6 @@ from discord.ext import commands
 
 from utils import checks, replies, storage
 from utils.duration import parse_duration
-from utils.i18n import t
 
 # Durée maximale d'un timeout Discord.
 MAX_TIMEOUT = timedelta(days=28)
@@ -54,21 +53,14 @@ class Mute(commands.Cog):
         )
 
         until = discord.utils.utcnow() + delta
-        embed = discord.Embed(
-            title=t(ctx, "mute.title"),
-            description=t(ctx, "mute.done", user=member.mention),
-            color=discord.Color.orange(),
+        spec = (
+            replies.Embed("warn", color=discord.Color.orange())
+            .title("mute.title")
+            .desc("mute.done", user=member.mention)
+            .field("mute.until", discord.utils.format_dt(until, style="F"))
+            .field("mute.relative", discord.utils.format_dt(until, style="R"))
         )
-        embed.add_field(
-            name=t(ctx, "mute.until"),
-            value=discord.utils.format_dt(until, style="F"),
-            inline=True,
-        )
-        embed.add_field(
-            name=t(ctx, "mute.relative"),
-            value=discord.utils.format_dt(until, style="R"), inline=True,
-        )
-        await ctx.send(embed=embed)
+        await replies.reply_rich(ctx, spec)
 
     @commands.hybrid_command(
         name="unmute",

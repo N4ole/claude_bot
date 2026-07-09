@@ -1,11 +1,15 @@
 """Commande `8ball` : boule magique qui répond à une question (embed)."""
 import random
 
-import discord
 from discord.ext import commands
 
-from utils import embeds
-from utils.i18n import EIGHTBALL, get_lang, t
+from utils import replies
+from utils.i18n import EIGHTBALL
+
+
+def _answer(lang: str, idx: int) -> str:
+    answers = EIGHTBALL.get(lang) or EIGHTBALL["fr"]
+    return answers[idx % len(answers)]
 
 
 class EightBall(commands.Cog):
@@ -19,12 +23,16 @@ class EightBall(commands.Cog):
         description="Pose une question à la boule magique.",
     )
     async def eightball(self, ctx: commands.Context, *, question: str) -> None:
-        answers = EIGHTBALL.get(get_lang(ctx), EIGHTBALL["fr"])
-        embed = embeds.fun(f"🎱 {random.choice(answers)}",
-                           title=t(ctx, "8ball.title"))
-        embed.add_field(name=t(ctx, "8ball.question"),
-                        value=question[:1024], inline=False)
-        await ctx.send(embed=embed)
+        # Indice figé : la réponse reste « la même » quand on traduit le message
+        # (on ne re-tire pas au sort à chaque bascule de langue).
+        idx = random.randrange(len(EIGHTBALL["fr"]))
+        spec = (
+            replies.Embed("fun")
+            .title("8ball.title")
+            .desc_fn(lambda l, i=idx: f"🎱 {_answer(l, i)}")
+            .field("8ball.question", question[:1024], inline=False)
+        )
+        await replies.reply_rich(ctx, spec)
 
 
 async def setup(bot: commands.Bot) -> None:
