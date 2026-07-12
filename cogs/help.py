@@ -38,11 +38,14 @@ class HelpView(discord.ui.View):
     def __init__(
         self, pages: list[discord.Embed], author_id: int, source
     ) -> None:
-        super().__init__(timeout=120)
+        # Le délai est réarmé à chaque clic (inactivité) : large pour laisser
+        # le temps de lire l'aide.
+        super().__init__(timeout=600)
         self.pages = pages
         self.index = 0
         self.author_id = author_id
         self.source = source
+        self.message: discord.Message | None = None
         self._refresh()
 
     def _refresh(self) -> None:
@@ -57,6 +60,16 @@ class HelpView(discord.ui.View):
             )
             return False
         return True
+
+    async def on_timeout(self) -> None:
+        # Désactive les boutons pour éviter un « interaction failed » silencieux.
+        for item in self.children:
+            item.disabled = True
+        if self.message is not None:
+            try:
+                await self.message.edit(view=self)
+            except discord.HTTPException:
+                pass
 
     @discord.ui.button(emoji="◀️", style=discord.ButtonStyle.secondary)
     async def prev(
@@ -226,7 +239,7 @@ class Help(commands.Cog):
             await replies.reply(ctx, "help.no_cmd", kind="error")
             return
         view = HelpView(pages, ctx.author.id, ctx.guild)
-        await ctx.send(embed=pages[0], view=view)
+        view.message = await ctx.send(embed=pages[0], view=view)
 
 
 async def setup(bot: commands.Bot) -> None:

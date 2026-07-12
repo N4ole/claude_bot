@@ -28,9 +28,10 @@ class RollView(discord.ui.View):
 
     def __init__(self, author_id: int, des: str, count: int, faces: int,
                  label: str) -> None:
-        super().__init__(timeout=120)
+        super().__init__(timeout=600)
         self.author_id = author_id
         self.des, self.count, self.faces = des, count, faces
+        self.message: discord.Message | None = None
         self.reroll.label = label
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
@@ -40,6 +41,15 @@ class RollView(discord.ui.View):
             )
             return False
         return True
+
+    async def on_timeout(self) -> None:
+        for item in self.children:
+            item.disabled = True
+        if self.message is not None:
+            try:
+                await self.message.edit(view=self)
+            except discord.HTTPException:
+                pass
 
     @discord.ui.button(emoji="🔁", style=discord.ButtonStyle.secondary)
     async def reroll(
@@ -75,8 +85,8 @@ class Roll(commands.Cog):
         des_label = f"{count}d{faces}"
         view = RollView(ctx.author.id, des_label, count, faces,
                         t(ctx, "btn.reroll"))
-        await ctx.send(embed=_roll_embed(ctx, des_label, count, faces),
-                       view=view)
+        view.message = await ctx.send(
+            embed=_roll_embed(ctx, des_label, count, faces), view=view)
 
 
 async def setup(bot: commands.Bot) -> None:

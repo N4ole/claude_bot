@@ -116,11 +116,13 @@ class ServersView(discord.ui.View):
     def __init__(
         self, guilds: list[discord.Guild], author_id: int, source
     ) -> None:
-        super().__init__(timeout=180)
+        # Délai réarmé à chaque clic (inactivité) ; large pour la navigation.
+        super().__init__(timeout=600)
         self.guilds = guilds
         self.index = 0
         self.author_id = author_id
         self.source = source
+        self.message: discord.Message | None = None
         self._refresh()
 
     def _refresh(self) -> None:
@@ -140,6 +142,15 @@ class ServersView(discord.ui.View):
             )
             return False
         return True
+
+    async def on_timeout(self) -> None:
+        for item in self.children:
+            item.disabled = True
+        if self.message is not None:
+            try:
+                await self.message.edit(view=self)
+            except discord.HTTPException:
+                pass
 
     @discord.ui.button(emoji="◀️", style=discord.ButtonStyle.secondary)
     async def prev(
@@ -183,7 +194,7 @@ class Servers(commands.Cog):
             await ctx.send(t(ctx, "srv.none"))
             return
         view = ServersView(guilds, ctx.author.id, ctx.guild)
-        await ctx.send(embed=view.current_embed(), view=view)
+        view.message = await ctx.send(embed=view.current_embed(), view=view)
 
     @serveurs.error
     async def _error(self, ctx: commands.Context, error) -> None:
